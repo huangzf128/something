@@ -1,9 +1,8 @@
 import os, time
 from shutil import copyfile
 
-rootPath = "D:\\ProjectDocument\\TrustEye\\pleiades\\workspace\\\
-TrustEye\\src\\main\\java\\com\\fpsol\\trusteye"
-
+rootPath = "E:\\prac"
+outRootPath = os.getcwd() + "\\outputFolder"
 
 def createFolder(path):
     if not os.path.exists(path):
@@ -12,10 +11,11 @@ def createFolder(path):
 for path, subdirs, files in os.walk(rootPath):
     for name in files:
         filePath = os.path.join(path, name)
-        currentPath = os.getcwd()
         updateTime = time.strftime('%Y/%m/%d %H:%M', time.localtime(os.path.getmtime(filePath)))
-        if updateTime > "2017/03/10 16:01":
+        if updateTime > "2017/02/01 16:01":
             print(filePath)
             # dir_path = os.path.dirname(os.path.realpath(__file__))
-            createFolder(currentPath + "\\files")
-            copyfile(filePath, currentPath + "\\files\\" + name)
+            createFolder(outRootPath)
+            copyPath = outRootPath + filePath.replace(rootPath, "")
+            createFolder(os.path.dirname(copyPath))
+            copyfile(filePath, copyPath)

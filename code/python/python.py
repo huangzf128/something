@@ -5,10 +5,8 @@ def odd_or_even():
         else:
             print("{0} is even".format(i))
 
-
 if __name__ == "__main__":
     odd_or_even()
-
 
 list = [1, 2, 3, 4]
 

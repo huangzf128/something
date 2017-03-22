@@ -1,9 +1,9 @@
-# from modual.hello import *
-
+# -*- coding: utf-8 -*-
 import os, difflib
 
 # variable declare
-musicRootPath = "F:\\Music\\之丹丹歌曲"
+musicRootPath = 'F:\\Music\\之丹丹歌曲'
+
 duplicateFileDict = {}
 
 # function definition
@@ -23,28 +23,22 @@ def getSimilarFile(file, dict):
             return key
     return None
 
-
-# main
+# main1
 for root, dirs, files in os.walk(musicRootPath):
     for file in files:
         if not isTargetFile(file):
             continue
-        
         key = getSimilarFile(file, duplicateFileDict)
         if key is not None:
             duplicateList = duplicateFileDict[key]
             duplicateList.append(os.path.join(root, file))
         else:
             duplicateFileDict[file] = [os.path.join(root, file)]
-        
 
 for file, fileFullPath in duplicateFileDict.items():
     if len(fileFullPath) > 1:
         print(file)
-        set(map(lambda x:print(x), fileFullPath))
+        set(map(lambda x: print(x), fileFullPath))
         print()
-    
+
 print(len(duplicateFileDict))
-
-
-
