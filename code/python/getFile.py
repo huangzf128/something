@@ -1,5 +1,5 @@
 import os, time
-from shutil import copyfile
+from shutil import copyfile1
 
 rootPath = "E:\\prac"
 outRootPath = os.getcwd() + "\\outputFolder"
