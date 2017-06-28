@@ -1,0 +1,13 @@
+sb.append("SELECT M1.SIIRESAKICODE");
+sb.append("	,	M1.HACHUWEEK1　～　発注曜日日");
+sb.append("	,	M1.MTKYSTRD");
+sb.append("	,	M1.MTKYENDD FROM M_SIIRESAKICAL M1");
+sb.append(" INNER");
+sb.append("  JOIN	M_SIIRESAKI M2");
+sb.append("    ON	M2.TENANTCODE	=	M1.TENANTCODE");
+sb.append("   AND	M2.SIIRESAKICODE	=	M1.SIIRESAKICODE");
+sb.append("   AND	M2.DELETEFLG	=	0 WHERE M1.TENANTCODE	=	セッション.TENANTCODE");
+sb.append("   AND	M1.TENPOCODE	=	画面.TENPOCODE");
+sb.append("   AND	M1.DELETEFLG	=	0");
+sb.append("   AND	M1.MTKYSTRD	<=	画面.基準日");
+sb.append("   AND	M1.MTKYENDD	>=	画面.基準日");

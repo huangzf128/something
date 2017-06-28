@@ -1,0 +1,72 @@
+// çÄñ⁄é´èëìKópÉ}ÉNÉç
+disabledraw;
+begingroupundo;
+
+$sb = searchbuffer;
+#so = searchoption;
+// ïœçXâ¬î\ÉGÉäÉAÅiäJénÅj
+
+
+
+
+// ïœçXâ¬î\ÉGÉäÉAÅièIóπÅj
+
+replaceallfast "åüçıçÄñ⁄","SELECT",noregular;
+replaceallfast "éÊìæçÄñ⁄","SELECT",noregular;
+replaceallfast "åüçıÉeÅ[ÉuÉã","FROM",noregular;
+replaceallfast "éÊìæÉeÅ[ÉuÉã","FROM",noregular;
+replaceallfast "åüçıèåè","WHERE",noregular;
+replaceallfast "éÊìæèåè","WHERE",noregular;
+replaceallfast "ï¿Ç—èá","ORDER BY",noregular;
+
+replaceallfast "ÅC",",",noregular;
+replaceallfast "ÅD",".",noregular;
+replaceallfast "Åf","'",noregular;
+replaceallfast "ÅÅ","=",noregular;
+replaceallfast "ÅÑ",">",noregular;
+replaceallfast "ÅÉ","<",noregular;
+replaceallfast "Åi","(",noregular;
+replaceallfast "Åj",")",noregular;
+replaceallfast "ÅÜ",">=",noregular;
+replaceallfast "ÅÖ","<=",noregular;
+replaceallfast "ÅÇ","<>",noregular;
+replaceallfast "ÅF",":",noregular;
+replaceallfast "Ç`","A",noregular;
+replaceallfast "Ça","B",noregular;
+replaceallfast "Çb","C",noregular;
+replaceallfast "Çc","D",noregular;
+replaceallfast "Çd","E",noregular;
+replaceallfast "Çe","F",noregular;
+replaceallfast "Çf","G",noregular;
+replaceallfast "Çg","H",noregular;
+replaceallfast "Çh","I",noregular;
+replaceallfast "Çi","J",noregular;
+replaceallfast "Çj","K",noregular;
+replaceallfast "Çk","L",noregular;
+replaceallfast "Çl","M",noregular;
+replaceallfast "Çm","N",noregular;
+replaceallfast "ÇO","0",noregular;
+replaceallfast "ÇP","1",noregular;
+replaceallfast "ÇQ","2",noregular;
+replaceallfast "ÇR","3",noregular;
+replaceallfast "ÇS","4",noregular;
+replaceallfast "ÇT","5",noregular;
+replaceallfast "ÇU","6",noregular;
+replaceallfast "ÇV","7",noregular;
+replaceallfast "ÇW","8",noregular;
+replaceallfast "ÇX","9",noregular;
+
+
+gofiletop;
+replaceallfast "","";
+
+setsearch $sb, #so;
+
+endgroupundo;
+
+
+// ------------------------ í«â¡ -------------------------------------
+
+
+
+
