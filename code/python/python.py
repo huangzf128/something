@@ -1,13 +1,19 @@
-def odd_or_even():
-    for i in range(1, 6):
-        if i % 2 != 0:
-            print("{0} is odd".format(i))
-        else:
-            print("{0} is even".format(i))
+import sys
+import scipy
+import numpy
+import warnings
+from scipy.io.wavfile import read
+from scipy.signal import hann
+from scipy.fftpack import rfft
+import matplotlib.pyplot as plt
 
-if __name__ == "__main__":
-    odd_or_even()
 
-list = [1, 2, 3, 4]
+s = [0, 1, 0, -1, 0, 1, 0, -1]
+k = numpy.fft.fft(s)
+d = numpy.abs(k)
+print(k * 3)
+print(d)
 
-print(list.count(2))
+
+plt.plot(k)
+plt.show()
