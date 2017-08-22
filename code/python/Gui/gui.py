@@ -1,4 +1,5 @@
-import os, fileinput, tkinter, codecs, modify_time
+import os, fileinput, tkinter, datetime
+import srteditor
 from tkinter import messagebox
 
 rootPath = os.path.join(os.getcwd(), "")
@@ -31,27 +32,18 @@ def search():
     for line, lineno in lines:
         result += (str(lineno) + "-----" + line)
     lbl_result_var.set(result)
-    #messagebox.showinfo("Hello Python", line)
-
-def inplace(orig_path, encoding='utf-8'):
-    """Modify a file in-place, with a consistent encoding."""
-    new_path = orig_path + '.modified'
-    lineno = 0
-    with codecs.open(orig_path, encoding=encoding) as orig:
-        with codecs.open(new_path, 'wb', encoding=encoding) as new:
-            for line in orig:
-                lineno += 1
-                yield line, new, lineno
-    os.rename(orig_path, orig_path + ".bk")
-    os.rename(new_path, orig_path)
+    # messagebox.showinfo("Hello Python", line)
 
 def update():
     target_file_path = os.path.join(rootPath, fileName)
-    min = entry_min.get()
-    sec = entry_sec.get()
-    for line, new, lineno in inplace(target_file_path):
+    min = int(entry_min.get())
+    sec = int(entry_sec.get())
+    during = datetime.timedelta(minutes=min, seconds=sec)
+
+    srt_editor = srteditor.SrtEditor()
+    for line, new, lineno in srt_editor.inplace(target_file_path):
         if len(line.strip()) > 0 and lineno >= int(entry_lineno.get()):
-            line = modify_time.process_line(line, int(min), int(sec))
+            line = srt_editor.time_shift(line, during)
         new.write(line)
     print("done")
 
