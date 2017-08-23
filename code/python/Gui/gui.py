@@ -1,31 +1,24 @@
-import os, fileinput, tkinter, datetime
+import os, fileinput, tkinter, datetime, queue
 import srteditor
-from tkinter import messagebox
+# from tkinter import messagebox
 
 rootPath = os.path.join(os.getcwd(), "")
 fileName = "Kurokawa no Techou ep01 (848x480 x264).srt"
 
-line_info = []
-
-def add_line_info(ele):
-    line_info.append(ele)
-    if len(line_info) > 10:
-        line_info.pop(0)
-
-def get_line_info():
-    return line_info
+que = queue.Queue(10)
 
 def search_file(target_file_path, target_text):
     with fileinput.FileInput(target_file_path, inplace=False, openhook=fileinput.hook_encoded("utf-8")) as file:
         for line in file:
             if len(line.strip()) == 0:
                 continue
-            add_line_info((line, file.lineno()))
+            que.push((line, file.lineno()))
             if line.find(target_text) > 0:
-                return get_line_info()
+                return que.pop()
         return None
 
-top = tkinter.Tk()
+# --------------- event ---------------------
+
 def search():
     lines = search_file(os.path.join(rootPath, fileName), entry_keyword.get())
     result = ""
@@ -47,7 +40,22 @@ def update():
         new.write(line)
     print("done")
 
+def delete():
+    target_file_path = os.path.join(rootPath, fileName)
+    del_lineno_str = int(entry_del_lineno_str.get())
+    del_lineno_end = int(entry_del_lineno_end.get())
+
+    srt_editor = srteditor.SrtEditor()
+    for line, new, lineno in srt_editor.inplace(target_file_path):
+        if len(line.strip()) > 0:
+            line = srt_editor.del_row((line, lineno), (del_lineno_str, del_lineno_end))
+            if line is None:
+                continue
+        new.write(line)
+    print("done")
+
 # --------------- print ---------------------
+top = tkinter.Tk()
 
 # search
 upperframe = tkinter.Frame(top)
@@ -62,15 +70,22 @@ btnSrch.pack(side=tkinter.LEFT)
 center_frame = tkinter.Frame(top)
 center_frame.pack(side=tkinter.TOP, fill=tkinter.X)
 
-entry_min = tkinter.Entry(center_frame, bd=5)
-entry_min.pack(side=tkinter.LEFT)
-entry_sec = tkinter.Entry(center_frame, bd=5)
-entry_sec.pack(side=tkinter.LEFT)
+entry_min = tkinter.Entry(center_frame)
+entry_min.grid(row=0, column=0)
+entry_sec = tkinter.Entry(center_frame)
+entry_sec.grid(row=0, column=1)
 
 entry_lineno = tkinter.Entry(center_frame, bd=5)
-entry_lineno.pack(side=tkinter.LEFT)
+entry_lineno.grid(row=1, column=0)
 btn_upd = tkinter.Button(center_frame, text="update", command=update)
-btn_upd.pack(side=tkinter.RIGHT)
+btn_upd.grid(row=1, column=1)
+
+entry_del_lineno_str = tkinter.Entry(center_frame)
+entry_del_lineno_str.grid(row=2, column=0)
+entry_del_lineno_end = tkinter.Entry(center_frame)
+entry_del_lineno_end.grid(row=2, column=1)
+btn_del = tkinter.Button(center_frame, text="delete", command=delete)
+btn_del.grid(row=2, column=2)
 
 # result
 lower_frame = tkinter.Frame(top)
