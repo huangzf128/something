@@ -15,7 +15,7 @@ class SrtEditor:
 
     def del_row(self, line_info, del_line_info):
         """ line_info(line, lineno), del_line_info(lineno_str, lineno_end) """
-        if del_line_info[0] < line_info[1] and line_info[1] < del_line_info[1]:
+        if del_line_info[0] <= line_info[1] and line_info[1] <= del_line_info[1]:
             return None
         return line_info[0]
 

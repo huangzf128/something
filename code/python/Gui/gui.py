@@ -1,20 +1,20 @@
-import os, fileinput, tkinter, datetime, queue
+import os, fileinput, tkinter, datetime
 import srteditor
 # from tkinter import messagebox
 
 rootPath = os.path.join(os.getcwd(), "")
 fileName = "Kurokawa no Techou ep01 (848x480 x264).srt"
 
-que = queue.Queue(10)
 
 def search_file(target_file_path, target_text):
+    lines = []
     with fileinput.FileInput(target_file_path, inplace=False, openhook=fileinput.hook_encoded("utf-8")) as file:
         for line in file:
-            if len(line.strip()) == 0:
-                continue
-            que.push((line, file.lineno()))
+            lines.append((line, file.lineno()))
+            if len(lines) >= 20:
+                lines.pop(0)
             if line.find(target_text) > 0:
-                return que.pop()
+                return lines
         return None
 
 # --------------- event ---------------------
@@ -47,10 +47,9 @@ def delete():
 
     srt_editor = srteditor.SrtEditor()
     for line, new, lineno in srt_editor.inplace(target_file_path):
-        if len(line.strip()) > 0:
-            line = srt_editor.del_row((line, lineno), (del_lineno_str, del_lineno_end))
-            if line is None:
-                continue
+        line = srt_editor.del_row((line, lineno), (del_lineno_str, del_lineno_end))
+        if line is None:
+            continue
         new.write(line)
     print("done")
 
@@ -93,7 +92,7 @@ lower_frame.pack(side=tkinter.TOP, fill=tkinter.X)
 
 lbl_result_var = tkinter.StringVar()
 lbl_result = tkinter.Label(lower_frame, textvariable=lbl_result_var,
-                           anchor=tkinter.W, justify=tkinter.LEFT, width=80, height=15)
+                           anchor=tkinter.W, justify=tkinter.LEFT, width=80, height=25)
 lbl_result.pack(side=tkinter.BOTTOM)
 
 entry_keyword.focus_set()
