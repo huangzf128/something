@@ -1,4 +1,4 @@
-import shutil, os
+import shutil, os, ntpath
 
 class File:
     # base class for handling file
@@ -17,3 +17,12 @@ class File:
             copy_to_path = file.replace(self.search_in_folder, output_folder)
             super().create_folder(os.path.dirname(copy_to_path))
             shutil.copyfile(file, copy_to_path)
+
+    def path_leaf(self, path):
+        # get filename from path
+
+        head, tail = ntpath.split(path)
+        return tail or ntpath.basename(head)
+
+
+print(os.path.split("/a/b/c"))
