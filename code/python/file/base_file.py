@@ -25,4 +25,4 @@ class File:
         return tail or ntpath.basename(head)
 
 
-print(os.path.split("/a/b/c"))
+print(os.path.isfile(r"E:\something\code\python\file\base_file.py"))
