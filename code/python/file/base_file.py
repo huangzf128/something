@@ -1,4 +1,4 @@
-import shutil, os, ntpath
+import shutil, os, ntpath, codecs
 
 class File:
     # base class for handling file
@@ -15,14 +15,27 @@ class File:
 
         for file in file_list:
             copy_to_path = file.replace(self.search_in_folder, output_folder)
-            super().create_folder(os.path.dirname(copy_to_path))
+            self.create_folder(os.path.dirname(copy_to_path))
             shutil.copyfile(file, copy_to_path)
 
-    def path_leaf(self, path):
+    def split_path(self, path):
         # get filename from path
 
         head, tail = ntpath.split(path)
-        return tail or ntpath.basename(head)
+        return (head, tail or ntpath.basename(head))
 
+    def inplace(self, file_path, encoding='utf-8'):
+        """Modify a file in-place, with a consistent encoding."""
 
-print(os.path.isfile(r"E:\something\code\python\file\base_file.py"))
+        new_path = file_path + '.modified'
+        lineno = 0
+        with codecs.open(file_path, encoding=encoding) as orig:
+            with codecs.open(new_path, 'wb', encoding=encoding) as new_file:
+                for line in orig:
+                    lineno += 1
+                    yield line, lineno, new_file
+        os.rename(file_path, file_path + ".bk")
+        os.rename(new_path, file_path)
+
+if __name__ == '__main__':
+    print(os.path.isfile(r"E:\something\code\python\file\base_file.py"))

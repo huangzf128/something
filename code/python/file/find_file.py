@@ -19,12 +19,13 @@ class FindFile(base_file.File):
                     file_list.append(file_path)
         return file_list
 
+
 if __name__ == "__main__":
-    search_in_folder = r"D:\workspace\SaaS\src"
-    output_path = os.getcwd() + "\\outputFolder"
+    search_in_folder = r"E:\TDDOWNLOAD\[kamigami.org] Fairy Tail 01-175 Fin [1280x720 R10 AAC RMVB Sub(Chi,Jap)]"
+    output_path = os.getcwd() + r"\outputFolder"
 
     find_file = FindFile(search_in_folder)
-    file_list = find_file.modifiedtime_greater_then(r"2017/08/13 01:01")
+    file_list = find_file.modifiedtime_greater_then(r"2017/09/04 01:01")
     find_file.copy_file_to_folder(file_list, output_path)
 
     print("OK")
