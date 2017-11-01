@@ -1,0 +1,8 @@
+C:\Users\FULONG\Desktop\ClipBoardWatcher\bin\Debug\ClipBoardWatcher.exe
+C:\Users\FULONG\Desktop\ClipBoardWatcher\bin\Debug\ClipBoardWatcher.pdb
+C:\Users\FULONG\Desktop\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.csprojResolveAssemblyReference.cache
+C:\Users\FULONG\Desktop\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.Form1.resources
+C:\Users\FULONG\Desktop\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.csproj.GenerateResource.Cache
+C:\Users\FULONG\Desktop\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.exe
+C:\Users\FULONG\Desktop\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.pdb
+C:\Users\FULONG\Desktop\ClipBoardWatcher\bin\Debug\ClipBoardWatcher.exe.config
