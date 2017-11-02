@@ -13,68 +13,69 @@ using System.Runtime.Serialization.Formatters;
 
 namespace ClipBoardWatcher
 {
-	/// <summary>
-	/// Summary description for Form1.
-	/// </summary>
-	public class Form1 : System.Windows.Forms.Form
-	{
-		private System.ComponentModel.IContainer components;
-		public System.Threading.Timer t =null;
-		public System.Windows.Forms.ToolTip tlpclipboarditem;
-		public static Form1 objclipboard = null;
-		public static string selectedClipItemData = "";
-		public static int selectedClipItemIndex = 0;
-		public static bool formloaded = false;
-		public static ClipBoardItems MyClipItems = null;
-		public System.Windows.Forms.ContextMenuStrip cxtmnuclip;
-		private System.Windows.Forms.ToolStripMenuItem mnuCopy2ClipBoard;
-		public static string prevclipboardcontents = "";
+    /// <summary>
+    /// Summary description for Form1.
+    /// </summary>
+    public class Form1 : System.Windows.Forms.Form
+    {
+        private System.ComponentModel.IContainer components;
+        public System.Threading.Timer t = null;
+        public System.Windows.Forms.ToolTip tlpclipboarditem;
+        public static Form1 objclipboard = null;
+        public static string selectedClipItemData = "";
+        public static int selectedClipItemIndex = 0;
+        public static bool formloaded = false;
+        public static ClipBoardItems MyClipItems = null;
+        public System.Windows.Forms.ContextMenuStrip cxtmnuclip;
+        private System.Windows.Forms.ToolStripMenuItem mnuCopy2ClipBoard;
+        public static string prevclipboardcontents = "";
 
-		// public static Hashtable clipboardcopytimings = null;
-		private System.Windows.Forms.ToolStripMenuItem mnuDelClipBoard;
-		private System.Windows.Forms.NotifyIcon notifyIcon1;
-		private System.Windows.Forms.ContextMenuStrip cxttaskbar;
-		private System.Windows.Forms.ToolStripMenuItem mnuShowHideForm;
-		private System.Windows.Forms.ToolStripMenuItem mnuOnTop;
-		private System.Windows.Forms.ToolStripMenuItem mnuExit;
-		private System.Windows.Forms.ToolStripMenuItem mnuDelClipBoardAll;
-        private Button button1;
+        // public static Hashtable clipboardcopytimings = null;
+        private System.Windows.Forms.ToolStripMenuItem mnuDelClipBoard;
+        private System.Windows.Forms.NotifyIcon notifyIcon1;
+        private System.Windows.Forms.ContextMenuStrip cxttaskbar;
+        private System.Windows.Forms.ToolStripMenuItem mnuShowHideForm;
+        private System.Windows.Forms.ToolStripMenuItem mnuOnTop;
+        private System.Windows.Forms.ToolStripMenuItem mnuExit;
+        private System.Windows.Forms.ToolStripMenuItem mnuDelClipBoardAll;
+        private Button btnSwitch;
         public DelegateGetAndDisplayClipData m_DelegateGetAndDisplayClipData;
-		public delegate void DelegateGetAndDisplayClipData();
+        public delegate void DelegateGetAndDisplayClipData();
 
-		public Form1()
-		{
-			//
-			// Required for Windows Form Designer support
-			//
-			InitializeComponent();
+        public Form1()
+        {
+            //
+            // Required for Windows Form Designer support
+            //
+            InitializeComponent();
             Screen scr = Screen.FromPoint(this.Location);
             this.Location = new Point(scr.WorkingArea.Right - this.Width, scr.WorkingArea.Top + 20);
         }
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if (components != null) 
-				{
-					components.Dispose();
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
                 }
                 notifyIcon1.Dispose();
-            }
-            base.Dispose( disposing );
-		}
 
-		#region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.tlpclipboarditem = new System.Windows.Forms.ToolTip(this.components);
@@ -87,7 +88,7 @@ namespace ClipBoardWatcher
             this.mnuShowHideForm = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuOnTop = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuExit = new System.Windows.Forms.ToolStripMenuItem();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnSwitch = new System.Windows.Forms.Button();
             this.cxtmnuclip.SuspendLayout();
             this.cxttaskbar.SuspendLayout();
             this.SuspendLayout();
@@ -168,15 +169,18 @@ namespace ClipBoardWatcher
             this.mnuExit.Text = "E&xit";
             this.mnuExit.Click += new System.EventHandler(this.mnuExit_Click);
             // 
-            // button1
+            // btnSwitch
             // 
-            this.button1.BackColor = System.Drawing.Color.ForestGreen;
-            this.button1.Location = new System.Drawing.Point(12, 351);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = false;
+            this.btnSwitch.BackColor = System.Drawing.Color.ForestGreen;
+            this.btnSwitch.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.btnSwitch.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.btnSwitch.Location = new System.Drawing.Point(12, 351);
+            this.btnSwitch.Name = "btnSwitch";
+            this.btnSwitch.Size = new System.Drawing.Size(94, 28);
+            this.btnSwitch.TabIndex = 2;
+            this.btnSwitch.Text = "Watching...";
+            this.btnSwitch.UseVisualStyleBackColor = false;
+            this.btnSwitch.Click += new System.EventHandler(this.btnSwitch_Click);
             // 
             // Form1
             // 
@@ -184,7 +188,7 @@ namespace ClipBoardWatcher
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(184, 386);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnSwitch);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.Location = new System.Drawing.Point(850, 0);
@@ -204,72 +208,66 @@ namespace ClipBoardWatcher
             this.cxttaskbar.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		/// <summary>
-		/// The main entry point for the application.
-		/// </summary>
-		[STAThread]
-		static void Main() 
-		{
-			objclipboard = new Form1();
-			objclipboard.Show();
-			Application.Run();
-		}
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            objclipboard = new Form1();
+            objclipboard.Show();
+            Application.Run();
+        }
 
-		private void Form1_Deactivate(object sender, System.EventArgs e)
-		{
+        private void Form1_Deactivate(object sender, System.EventArgs e)
+        {
             try
             {
                 objclipboard.Opacity = 0.4;
             }
-            catch {}
-		}
+            catch { }
+        }
 
-		private void LoadClipBoardData(object temp)
-		{
-			try
-			{
-				objclipboard.Invoke(m_DelegateGetAndDisplayClipData);
-			}
-			catch {}
-		}
+        private void LoadClipBoardData(object temp)
+        {
+            try
+            {
+                objclipboard.Invoke(m_DelegateGetAndDisplayClipData);
+            }
+            catch { }
+        }
 
-		private void GetAndDisplayClipData()
-		{
-			IDataObject iData = Clipboard.GetDataObject();
-			if(iData != null)
-			{
-				string currentclipboardcontents = "";
-				try
-				{
-				    currentclipboardcontents = iData.GetData(DataFormats.StringFormat).ToString();
-                    if (currentclipboardcontents.ToString().Trim() == "")
-                    {
-                        return;
-                    }
+        private void GetAndDisplayClipData()
+        {
+            IDataObject iData = Clipboard.GetDataObject();
+            if (iData != null)
+            {
+                string currentclipboardcontents = "";
+                try
+                {
+                    currentclipboardcontents = iData.GetData(DataFormats.StringFormat).ToString();
+                    if (currentclipboardcontents.ToString().Trim() == "") return;
                 }
-				catch{ return; }
+                catch { return; }
 
-				if(prevclipboardcontents != currentclipboardcontents)
-				{
-					IntPtr hwnd = APIFuncs.getforegroundWindow();
-					Int32 pid = APIFuncs.GetWindowProcessID(hwnd);
-					Process p = Process.GetProcessById(pid);
-					prevclipboardcontents = currentclipboardcontents;
-					MyClipItems.AddNewClipItem(currentclipboardcontents, p.MainModule.FileName);
-				}
-			}
-		}
-
-		private void Form1_Activated(object sender, System.EventArgs e)
-		{
-			objclipboard.Opacity = 1;
-		}
+                if (prevclipboardcontents != currentclipboardcontents)
+                {
+                    IntPtr hwnd = APIFuncs.getforegroundWindow();
+                    Int32 pid = APIFuncs.GetWindowProcessID(hwnd);
+                    Process p = Process.GetProcessById(pid);
+                    prevclipboardcontents = currentclipboardcontents;
+                    MyClipItems.AddNewClipItem(currentclipboardcontents, p.MainModule.FileName);
+                }
+            }
+        }
 
 
         #region ============================ Event ==================================
+
+        #region ÅöÅöÅöÅöÅö Form ÅöÅöÅöÅöÅö
 
         private void Form1_Load(object sender, System.EventArgs e)
         {
@@ -281,17 +279,113 @@ namespace ClipBoardWatcher
 
             // clipboardcopytimings = new Hashtable();
             formloaded = true;
-            MyClipItems = new ClipBoardItems(this);
-            m_DelegateGetAndDisplayClipData = new DelegateGetAndDisplayClipData(this.GetAndDisplayClipData);
 
-            System.Threading.TimerCallback timerDelegate = new System.Threading.TimerCallback(this.LoadClipBoardData);
-            t = new System.Threading.Timer(timerDelegate, null, 0, 1000);
+            MyClipItems = new ClipBoardItems(this);
+
+            //m_DelegateGetAndDisplayClipData = new DelegateGetAndDisplayClipData(this.GetAndDisplayClipData);
+            //System.Threading.TimerCallback timerDelegate = new System.Threading.TimerCallback(this.LoadClipBoardData);
+            //t = new System.Threading.Timer(timerDelegate, null, 0, 1000);
+
+            APIFuncs.AddClipboardListener(this.Handle);
         }
 
-		private void mnuCopy2ClipBoard_Click(object sender, System.EventArgs e) {
+        private void Form1_Closed(object sender, System.EventArgs e)
+        {
+            try
+            {
+                APIFuncs.RemoveClipboardListener(this.Handle);
+                if (System.IO.Directory.Exists(@"c:\clipboard"))
+                {
+                    System.IO.Directory.Delete(@"c:\clipboard", true);
+                }
+                Application.Exit();
+            }
+            catch(Exception ex)
+            {
+                Application.Exit();
+            }
+        }
 
-			Clipboard.SetDataObject(selectedClipItemData,true);
-		}
+        private void Form1_Activated(object sender, System.EventArgs e)
+        {
+            objclipboard.Opacity = 1;
+        }
+
+        private void Form1_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.U)
+            {
+                try
+                {
+                    if (Form1.objclipboard.Opacity < 1)
+                        Form1.objclipboard.Opacity += 0.1;
+                }
+                catch { }
+            }
+            else if (e.Control && e.KeyCode == Keys.D)
+            {
+                try
+                {
+                    if (Form1.objclipboard.Opacity > 0.1)
+                        Form1.objclipboard.Opacity -= 0.1;
+                }
+                catch { }
+            }
+        }
+
+        private void Form1_MouseLeave(object sender, System.EventArgs e)
+        {
+        }
+
+        private void Form1_MouseEnter(object sender, System.EventArgs e)
+        {
+            objclipboard.Opacity = 1;
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+
+            if (m.Msg == APIFuncs.WM_CLIPBOARDUPDATE)
+            {
+                IDataObject iData = Clipboard.GetDataObject();      // Clipboard's data.
+
+                /* Depending on the clipboard's current data format we can process the data differently. 
+                 * Feel free to add more checks if you want to process more formats. */
+                if (iData.GetDataPresent(DataFormats.Text))
+                {
+                    string text = (string)iData.GetData(DataFormats.Text);
+
+                    //try
+                    //{
+                    //    objclipboard.Invoke(m_DelegateGetAndDisplayClipData);
+                    //}
+                    //catch { }
+
+                    if (!ClipBoardItems.onWatching || ClipBoardItems.MAX_ITEM_COUNT <= MyClipItems.Count)
+                    {
+                        return;
+                    }
+                    GetAndDisplayClipData();
+                }
+                else if (iData.GetDataPresent(DataFormats.Bitmap))
+                {
+                    // Bitmap image = (Bitmap)iData.GetData(DataFormats.Bitmap);
+                    // do something with it
+                }
+            }
+        }
+
+        #endregion
+
+
+        #region ÅöÅöÅöÅöÅö Menu Item ÅöÅöÅöÅöÅö
+
+        private void mnuCopy2ClipBoard_Click(object sender, System.EventArgs e)
+        {
+
+            Clipboard.SetDataObject(selectedClipItemData, true);
+        }
 
         private void mnuDelClipBoard_Click(object sender, System.EventArgs e)
         {
@@ -341,7 +435,6 @@ namespace ClipBoardWatcher
                 {
                     mnuOnTop.Checked = true;
                     Form1.objclipboard.TopMost = true;
-
                 }
             }
             catch { }
@@ -361,56 +454,22 @@ namespace ClipBoardWatcher
             }
         }
 
+        private void btnSwitch_Click(object sender, EventArgs e)
+        {
+            ClipBoardItems.onWatching = !ClipBoardItems.onWatching;
+
+            if (ClipBoardItems.onWatching)
+            {
+                btnSwitch.Text = "Watching...";
+            } else
+            {
+                btnSwitch.Text = "Pause";
+            }
+        }
 
         #endregion
 
-		private void Form1_Closed(object sender, System.EventArgs e)
-		{
-			try
-			{
-				Application.Exit();
-				if(System.IO.Directory.Exists(@"c:\clipboard"))
-				{
-					System.IO.Directory.Delete(@"c:\clipboard",true);
-				}
-			}
-			catch
-			{
-			    Application.Exit();
-			}
-		}
-
-		private void Form1_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
-		{
-			if(e.Control && e.KeyCode == Keys.U)
-			{
-				try
-				{
-					if(Form1.objclipboard.Opacity < 1)
-						Form1.objclipboard.Opacity += 0.1;
-				}
-				catch{}
-			}
-			else if(e.Control && e.KeyCode == Keys.D)
-			{
-				try
-				{
-					if(Form1.objclipboard.Opacity > 0.1)
-						Form1.objclipboard.Opacity -= 0.1;
-				}
-				catch{}
-			}
-		}
-
-		private void Form1_MouseLeave(object sender, System.EventArgs e)
-		{
-
-		}
-
-		private void Form1_MouseEnter(object sender, System.EventArgs e)
-		{
-			objclipboard.Opacity = 1;
-		}
+        #endregion
 
         #region no use
         /*

@@ -21,10 +21,26 @@ namespace ClipBoardWatcher
 		//This Function is used to get Active process ID...
 		[System.Runtime.InteropServices.DllImport("user32.dll", CharSet=System.Runtime.InteropServices.CharSet.Auto)]
 		private static extern Int32 GetWindowThreadProcessId(IntPtr hWnd,out Int32 lpdwProcessId);
-   		#endregion
+
+        /// <summary>
+        /// Places the given window in the system-maintained clipboard format listener list.
+        /// </summary>
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool AddClipboardFormatListener(IntPtr hwnd);
+
+        /// <summary>
+        /// Removes the given window from the system-maintained clipboard format listener list.
+        /// </summary>
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
+
+        #endregion
+
 
         #region User-defined Functions
-		public static  Int32 GetWindowProcessID(IntPtr hwnd)
+        public static  Int32 GetWindowProcessID(IntPtr hwnd)
 		{
 			//This Function is used to get Active process ID...
 			Int32 pid;
@@ -46,8 +62,25 @@ namespace ClipBoardWatcher
 			if ((intLength <= 0) || (intLength > lpText.Length)) return "unknown";
 			return lpText.Trim();
 		}
-		#endregion
-		public APIFuncs()
+
+        public static bool AddClipboardListener(IntPtr hwnd)
+        {
+            return AddClipboardFormatListener(hwnd);
+        }
+
+        public static bool RemoveClipboardListener(IntPtr hwnd)
+        {
+            return RemoveClipboardFormatListener(hwnd);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Sent when the contents of the clipboard have changed.
+        /// </summary>
+        public const int WM_CLIPBOARDUPDATE = 0x031D;
+
+        public APIFuncs()
 		{
 		}
 	}
