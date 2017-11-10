@@ -1,4 +1,4 @@
-import os, time
+import os, time, difflib
 import base_file
 
 class FindFile(base_file.File):
@@ -19,13 +19,35 @@ class FindFile(base_file.File):
                     file_list.append(file_path)
         return file_list
 
+    def get_filename_similar_rate(self, file_nm1, file_nm2):
+        return difflib.SequenceMatcher(None, file_nm1, file_nm2).ratio()
+
+    def find_file_by_name(self, file_name, similar_rate=1):
+
+        file_list = []
+        for path, subdirs, files in os.walk(self.search_in_folder):
+            for name in files:
+                if similar_rate == 1 and file_name == name:
+                    file_list.append(os.path.join(path, name))
+                else:
+                    rate = self.get_filename_similar_rate(file_name, name)
+                    if rate >= similar_rate:
+                        file_list.append(os.path.join(path, name))
+        return file_list
+
+
+search_in_folder = r"D:\somethings\code\python"
+output_path = os.getcwd() + r"\output"
+
+print(12)
+find_file = FindFile(search_in_folder)
+
+# file_list = find_file.modifiedtime_greater_then(r"2017/09/04 01:01")
+# find_file.copy_file_to_folder(file_list, output_path)
+
+file_list = find_file.find_file_by_name("music", 0.5)
+print(file_list)
+print("OK")
 
 if __name__ == "__main__":
-    search_in_folder = r"E:\TDDOWNLOAD\[kamigami.org] Fairy Tail 01-175 Fin [1280x720 R10 AAC RMVB Sub(Chi,Jap)]"
-    output_path = os.getcwd() + r"\outputFolder"
-
-    find_file = FindFile(search_in_folder)
-    file_list = find_file.modifiedtime_greater_then(r"2017/09/04 01:01")
-    find_file.copy_file_to_folder(file_list, output_path)
-
-    print("OK")
+    print("OOOOOKKKKKK")

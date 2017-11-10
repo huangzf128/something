@@ -25,7 +25,7 @@ class FetchPic:
         return img_urls
 
     def get_img(self, img_urls):
-        getRes = getResource.GetResource("pic")
+        getRes = getResource.GetResource("output/pic")
         for url in img_urls:
             getRes.get(url)
 

@@ -1,9 +1,0 @@
-D:\somethings\SyncFolder\SyncFolder\bin\Debug\SyncFolder.exe.config
-D:\somethings\SyncFolder\SyncFolder\bin\Debug\SyncFolder.exe
-D:\somethings\SyncFolder\SyncFolder\bin\Debug\SyncFolder.pdb
-D:\somethings\SyncFolder\SyncFolder\obj\Debug\SyncFolder.csprojResolveAssemblyReference.cache
-D:\somethings\SyncFolder\SyncFolder\obj\Debug\SyncFolder.Form1.resources
-D:\somethings\SyncFolder\SyncFolder\obj\Debug\SyncFolder.Properties.Resources.resources
-D:\somethings\SyncFolder\SyncFolder\obj\Debug\SyncFolder.csproj.GenerateResource.Cache
-D:\somethings\SyncFolder\SyncFolder\obj\Debug\SyncFolder.exe
-D:\somethings\SyncFolder\SyncFolder\obj\Debug\SyncFolder.pdb
