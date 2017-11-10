@@ -1,8 +1,0 @@
-D:\somethings\ClipBoardWatcher\bin\Debug\ClipBoardWatcher.exe.config
-D:\somethings\ClipBoardWatcher\bin\Debug\ClipBoardWatcher.exe
-D:\somethings\ClipBoardWatcher\bin\Debug\ClipBoardWatcher.pdb
-D:\somethings\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.csprojResolveAssemblyReference.cache
-D:\somethings\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.Form1.resources
-D:\somethings\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.csproj.GenerateResource.Cache
-D:\somethings\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.exe
-D:\somethings\ClipBoardWatcher\obj\Debug\ClipBoardWatcher.pdb
