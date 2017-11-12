@@ -19,10 +19,7 @@ class FindFile(base_file.File):
                     file_list.append(file_path)
         return file_list
 
-    def get_filename_similar_rate(self, file_nm1, file_nm2):
-        return difflib.SequenceMatcher(None, file_nm1, file_nm2).ratio()
-
-    def find_file_by_name(self, file_name, similar_rate=1):
+    def find_file_by_similar_name(self, file_name, similar_rate=1):
 
         file_list = []
         for path, subdirs, files in os.walk(self.search_in_folder):
@@ -35,19 +32,18 @@ class FindFile(base_file.File):
                         file_list.append(os.path.join(path, name))
         return file_list
 
+    def get_filename_similar_rate(self, file_nm1, file_nm2):
+        return difflib.SequenceMatcher(None, file_nm1, file_nm2).ratio()
 
-search_in_folder = r"D:\somethings\code\python"
-output_path = os.getcwd() + r"\output"
-
-print(12)
-find_file = FindFile(search_in_folder)
-
-# file_list = find_file.modifiedtime_greater_then(r"2017/09/04 01:01")
-# find_file.copy_file_to_folder(file_list, output_path)
-
-file_list = find_file.find_file_by_name("music", 0.5)
-print(file_list)
-print("OK")
 
 if __name__ == "__main__":
-    print("OOOOOKKKKKK")
+    search_in_folder = r"E:\something\code\python"
+    output_path = os.getcwd() + r"\output"
+
+    find_file = FindFile(search_in_folder)
+
+    # file_list = find_file.modifiedtime_greater_then(r"2017/09/04 01:01")
+    # find_file.copy_file_to_folder(file_list, output_path)
+
+    file_list = find_file.find_file_by_similar_name("music", 0.5)
+    find_file.copy_file_to_folder(file_list, output_path)
