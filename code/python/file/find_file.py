@@ -1,5 +1,5 @@
 import os, time, difflib
-import base_file
+from . import base_file
 
 class FindFile(base_file.File):
     # find file in search_in_folder
