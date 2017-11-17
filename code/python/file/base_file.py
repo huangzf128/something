@@ -1,4 +1,4 @@
-import shutil, os, ntpath, codecs
+import shutil, os, ntpath, codecs, stat
 
 class File:
     # base class for handling file
@@ -17,7 +17,12 @@ class File:
         for file in file_list:
             copy_to_path = file.replace(self.search_in_folder, output_folder)
             self.create_folder(os.path.dirname(copy_to_path))
-            shutil.copyfile(file, copy_to_path)
+            try:
+                shutil.copy2(file, copy_to_path)
+            except Exception:
+                os.chmod(copy_to_path, stat.S_IWRITE)
+                # os.remove(copy_to_path)
+                shutil.copy2(file, copy_to_path)
 
     def split_path(self, path):
         # get filename from path
@@ -37,6 +42,7 @@ class File:
                     yield line, lineno, new_file
         os.rename(file_path, file_path + ".bk")
         os.rename(new_path, file_path)
+
 
 if __name__ == '__main__':
     print(os.path.isfile(r"E:\something\code\python\file\base_file.py"))

@@ -1,11 +1,10 @@
 import os, time
 
-# rootPath = r"D:\VB\WTMVB\work\S02"
+rootPath = r"D:\VB\WTMVB\work\S02"
 # buildToolPath = "C:\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\Bin\\msbuild"
 
-rootPath = r"D:\VB\WTMVB\work\S99"
+# rootPath = r"D:\VB\WTMVB\work\S99"
 buildToolPath = r"C:\Windows\Microsoft.NET\Framework\v3.5\MSBuild"
-
 
 files = [f for f in os.listdir(rootPath) if os.path.isdir(rootPath + "\\" + f) and f != "bin"]
 
