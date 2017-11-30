@@ -1,7 +1,7 @@
 import os, re
-import base_file
+from . import base_file
 
-class ModifyFile(base_file.File):
+class ModifyFile(base_file.BaseFile):
 
     def __init__(self):
         pass

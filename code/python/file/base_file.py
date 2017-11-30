@@ -1,8 +1,7 @@
 import shutil, os, ntpath, codecs, stat
 
-class File:
+class BaseFile:
     # base class for handling file
-
     def __init__(self):
         pass
 
@@ -24,8 +23,7 @@ class File:
                 # os.remove(copy_to_path)
                 shutil.copy2(file, copy_to_path)
 
-    def split_path(self, path):
-        # get filename from path
+    def split_path_last_separator(self, path):
 
         head, tail = ntpath.split(path)
         return (head, tail or ntpath.basename(head))
@@ -46,3 +44,6 @@ class File:
 
 if __name__ == '__main__':
     print(os.path.isfile(r"E:\something\code\python\file\base_file.py"))
+    b_File = BaseFile()
+
+    print(b_File.split_path_last_separator(r"\asa\bbb\f.txt"))

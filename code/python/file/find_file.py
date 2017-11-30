@@ -1,7 +1,8 @@
-import os, time, difflib, re
+import os, time
 from . import base_file
+from string import similar, str_tools
 
-class FindFile(base_file.File):
+class FindFile(base_file.BaseFile):
     # find file in search_in_folder
 
     def __init__(self, search_in_folder):
@@ -27,37 +28,28 @@ class FindFile(base_file.File):
                 if similar_rate == 1 and file_name == name:
                     file_list.append(os.path.join(path, name))
                 else:
-                    rate = self.get_filename_similar_rate(file_name, name)
+                    # rate = self.get_filename_similar_rate(file_name, name)
+                    rate = similar.get_similar_rate(file_name, name)
                     if rate >= similar_rate:
                         file_list.append(os.path.join(path, name))
         return file_list
-
-    def get_filename_similar_rate(self, file_nm1, file_nm2):
-        return difflib.SequenceMatcher(None, file_nm1, file_nm2).ratio()
 
     def get_all_exclude(self, exclude_files, exclude_folders):
         file_list = []
         for path, subdirs, files in os.walk(self.search_in_folder):
             subdirs[:] = [d for d in subdirs if d not in exclude_folders]
             for name in files:
-                if not self.exists_in_list_reg(name, exclude_files):
+                if not str_tools.exists_in_list_reg(name, exclude_files):
                     file_list.append(os.path.join(path, name))
         return file_list
-
-    def exists_in_list_reg(self, str, reg_list):
-        for reg in reg_list:
-            if re.search(reg, str, re.IGNORECASE):
-                return True
-        return False
 
     def get_all_reg(self, target_reg):
         file_list = []
         for path, subdirs, files in os.walk(self.search_in_folder):
             for name in files:
-                if self.exists_in_list_reg(name, target_reg):
+                if str_tools.exists_in_list_reg(name, target_reg):
                     file_list.append(os.path.join(path, name))
         return file_list
-
 
 if __name__ == "__main__":
     search_in_folder = r"E:\something\code\python"
