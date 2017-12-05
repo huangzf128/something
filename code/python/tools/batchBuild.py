@@ -1,6 +1,6 @@
 import os, time
 
-rootPath = r"D:\VB\WTMVB\work\S02"
+rootPath = r"D:\VB\WKTVB\S02"
 # buildToolPath = "C:\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\Bin\\msbuild"
 
 # rootPath = r"D:\VB\WTMVB\work\S99"

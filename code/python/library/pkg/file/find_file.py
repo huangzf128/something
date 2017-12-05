@@ -1,6 +1,6 @@
 import os, time
 from . import base_file
-from string import similar, str_tools
+from ..string import similar, str_tools
 
 class FindFile(base_file.BaseFile):
     # find file in search_in_folder
@@ -39,7 +39,7 @@ class FindFile(base_file.BaseFile):
         for path, subdirs, files in os.walk(self.search_in_folder):
             subdirs[:] = [d for d in subdirs if d not in exclude_folders]
             for name in files:
-                if not str_tools.exists_in_list_reg(name, exclude_files):
+                if not str_tools.match_exists_reg(name, exclude_files):
                     file_list.append(os.path.join(path, name))
         return file_list
 
@@ -47,9 +47,12 @@ class FindFile(base_file.BaseFile):
         file_list = []
         for path, subdirs, files in os.walk(self.search_in_folder):
             for name in files:
-                if str_tools.exists_in_list_reg(name, target_reg):
+                if str_tools.match_exists_reg(name, target_reg):
                     file_list.append(os.path.join(path, name))
         return file_list
+
+    def get_file_by_name(self, f_names, d_names, exclude_f_names, exclude_d_names):
+        pass
 
 if __name__ == "__main__":
     search_in_folder = r"E:\something\code\python"
