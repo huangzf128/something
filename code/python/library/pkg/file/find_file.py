@@ -23,8 +23,11 @@ class FindFile(base_file.BaseFile):
             if exclude_d_names is not None:
                 subdirs[:] = [d for d in subdirs if os.path.join(sub_path, d) not in exclude_d_names]
 
-            if d_names is not None:
-                pass
+            for d in d_names:
+                if d in (path + "\\"):
+                    break
+            else:
+                continue
 
             for name in files:
                 if f_names is None or name in f_names:
