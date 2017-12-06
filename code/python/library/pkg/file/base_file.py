@@ -6,12 +6,12 @@ class BaseFile:
         pass
 
     # ------------- folder -------------
-    def create_folder(self, path_foldername):
-        if not os.path.exists(path_foldername):
-            os.makedirs(path_foldername)
+    def create_folder(self, dir_name):
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
 
     def copy_file_to_folder(self, file_list, output_folder):
-        # copy file_list to output_folder
+        """ copy file_list to output_folder """
 
         for file in file_list:
             copy_to_path = file.replace(self.search_in_folder, output_folder)
@@ -41,9 +41,3 @@ class BaseFile:
         os.rename(file_path, file_path + ".bk")
         os.rename(new_path, file_path)
 
-
-if __name__ == '__main__':
-    print(os.path.isfile(r"E:\something\code\python\file\base_file.py"))
-    b_File = BaseFile()
-
-    print(b_File.split_path_last_separator(r"\asa\bbb\f.txt"))
