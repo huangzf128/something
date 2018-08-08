@@ -1,14 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
-set svnUrl=https://10.83.240.210/svn/sizpp_web/trunk/sizppWeb
-set startDate=2017-03-17
+set svnUrl=https://192.168.246.150/svn/watami/SRC
+set startDate=2018-06-26
 set "preA=A       "
 set "preM=M       "
 set "preM1= M      "
 
-set localJavaPath=D:\pleiades\workspace\sizppWeb
-set localClassPath=D:\pleiades\workspace\sizppWeb\target
-set outputPath=C:\Users\FULONG\Desktop\新しいフォルダー
+set localJavaPath=WKT\sizppWeb
+set localClassPath=WKT\sizppWeb\target
+set outputPath=新しいフォルダー
 
 rem ~~~~~~~~~~~~~~~~~~~~~~~
 rem		get svn history

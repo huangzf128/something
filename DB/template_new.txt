@@ -1,0 +1,591 @@
+package jp.fujitsu.saas.common.mvc.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.stereotype.Repository;
+import jp.fujitsu.saas.common.mvc.dao.entity.EntityT_EMPWEEKKYUSYUTU;
+
+@Repository
+public class DaoT_EMPWEEKKYUSYUTU extends BaseDAO {
+
+	public int insert(EntityT_EMPWEEKKYUSYUTU entity) throws DaoException { 
+
+		// sql文
+		StringBuffer bufSql = new StringBuffer();
+		// パラメータリスト
+		List<Object> lstParam = new ArrayList<Object>();
+
+		bufSql.append(" INSERT INTO ");
+		bufSql.append("T_EMPWEEKKYUSYUTU");
+		bufSql.append(" (");
+		bufSql.append("  TENANTCODE");
+		bufSql.append(", EMPCODE");
+		bufSql.append(", EMPCODE2");
+		bufSql.append(", TAISYONENGETU");
+		bufSql.append(", STRDAY");
+		bufSql.append(", ENDDAY");
+		bufSql.append(", EIGYOBI6");
+		bufSql.append(", EIGYOBI7");
+		bufSql.append(", SYUKINFLGJSK1");
+		bufSql.append(", SYUKINFLGJSK2");
+		bufSql.append(", SYUKINFLGJSK3");
+		bufSql.append(", SYUKINFLGJSK4");
+		bufSql.append(", SYUKINFLGJSK5");
+		bufSql.append(", SYUKINFLGJSK6");
+		bufSql.append(", SYUKINFLGJSK7");
+		bufSql.append(", HIZANTIMEYOKUJITUJSK6");
+		bufSql.append(", FURIZANTIMEYOKUJITUJSK6");
+		bufSql.append(", KYUSYUTUTAISYOTIMEJSK6");
+		bufSql.append(", HIZANTIMETOJITUJSK7");
+		bufSql.append(", FURIZANTIMETOJITUJSK7");
+		bufSql.append(", HIZANTIMEYOKUJITUJSK7");
+		bufSql.append(", FURIZANTIMEYOKUJITUJSK7");
+		bufSql.append(", KYUSYUTUTAISYOTIMETOJITUJSK7");
+		bufSql.append(", KYUSYUTUTAISYOTIMEYOKUJITUJSK7");
+		bufSql.append(", SYUKINFLGSFT1");
+		bufSql.append(", SYUKINFLGSFT2");
+		bufSql.append(", SYUKINFLGSFT3");
+		bufSql.append(", SYUKINFLGSFT4");
+		bufSql.append(", SYUKINFLGSFT5");
+		bufSql.append(", SYUKINFLGSFT6");
+		bufSql.append(", SYUKINFLGSFT7");
+		bufSql.append(", HIZANTIMEYOKUJITUSFT6");
+		bufSql.append(", FURIZANTIMEYOKUJITUSFT6");
+		bufSql.append(", KYUSYUTUTAISYOTIMESFT6");
+		bufSql.append(", HIZANTIMETOJITUSFT7");
+		bufSql.append(", FURIZANTIMETOJITUSFT7");
+		bufSql.append(", HIZANTIMEYOKUJITUSFT7");
+		bufSql.append(", FURIZANTIMEYOKUJITUSFT7");
+		bufSql.append(", KYUSYUTUTAISYOTIMETOJITUSFT7");
+		bufSql.append(", KYUSYUTUTAISYOTIMEYOKUJITUSFT7");
+		bufSql.append(", ALLJSKFLG");
+		bufSql.append(", KYUSYUTUFLG6");
+		bufSql.append(", KYUSYUTUFLG7");
+		bufSql.append(", KYUSYUTUKBN7");
+		bufSql.append(", KYUSYUTUCNTOUTMONTH");
+		bufSql.append(", KYUSYUTUCNTINMONTH");
+		bufSql.append(", HIZANTIME6");
+		bufSql.append(", FURIZANTIME6");
+		bufSql.append(", KYUSYUTUTIME6");
+		bufSql.append(", HIZANTIME7");
+		bufSql.append(", FURIZANTIME7");
+		bufSql.append(", KYUSYUTUTIME7");
+		bufSql.append(", HIZANTIMESUMOUTMONTH");
+		bufSql.append(", FURIZANTIMESUMOUTMONTH");
+		bufSql.append(", KYUSYUTUTIMESUMOUTMONTH");
+		bufSql.append(", HIZANTIMESUMINMONTH");
+		bufSql.append(", FURIZANTIMESUMINMONTH");
+		bufSql.append(", KYUSYUTUTIMESUMINMONTH");
+		bufSql.append(", INSERTDATE");
+		bufSql.append(", INSERTCODE");
+		bufSql.append(", INSERTPROGRAMID");
+		bufSql.append(", INSERTPCNAME");
+		bufSql.append(", UPDATEDATE");
+		bufSql.append(", UPDATECODE");
+		bufSql.append(", UPDATEPROGRAMID");
+		bufSql.append(", UPDATEPCNAME");
+		bufSql.append(", DELETEFLG");
+		bufSql.append(" )");
+		bufSql.append(" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+
+		lstParam.add(entity.getTenantcode());
+		lstParam.add(entity.getEmpcode());
+		lstParam.add(entity.getEmpcode2());
+		lstParam.add(entity.getTaisyonengetu());
+		lstParam.add(entity.getStrday());
+		lstParam.add(entity.getEndday());
+		lstParam.add(entity.getEigyobi6());
+		lstParam.add(entity.getEigyobi7());
+		lstParam.add(entity.getSyukinflgjsk1());
+		lstParam.add(entity.getSyukinflgjsk2());
+		lstParam.add(entity.getSyukinflgjsk3());
+		lstParam.add(entity.getSyukinflgjsk4());
+		lstParam.add(entity.getSyukinflgjsk5());
+		lstParam.add(entity.getSyukinflgjsk6());
+		lstParam.add(entity.getSyukinflgjsk7());
+		lstParam.add(entity.getHizantimeyokujitujsk6());
+		lstParam.add(entity.getFurizantimeyokujitujsk6());
+		lstParam.add(entity.getKyusyututaisyotimejsk6());
+		lstParam.add(entity.getHizantimetojitujsk7());
+		lstParam.add(entity.getFurizantimetojitujsk7());
+		lstParam.add(entity.getHizantimeyokujitujsk7());
+		lstParam.add(entity.getFurizantimeyokujitujsk7());
+		lstParam.add(entity.getKyusyututaisyotimetojitujsk7());
+		lstParam.add(entity.getKyusyututaisyotimeyokujitujsk7());
+		lstParam.add(entity.getSyukinflgsft1());
+		lstParam.add(entity.getSyukinflgsft2());
+		lstParam.add(entity.getSyukinflgsft3());
+		lstParam.add(entity.getSyukinflgsft4());
+		lstParam.add(entity.getSyukinflgsft5());
+		lstParam.add(entity.getSyukinflgsft6());
+		lstParam.add(entity.getSyukinflgsft7());
+		lstParam.add(entity.getHizantimeyokujitusft6());
+		lstParam.add(entity.getFurizantimeyokujitusft6());
+		lstParam.add(entity.getKyusyututaisyotimesft6());
+		lstParam.add(entity.getHizantimetojitusft7());
+		lstParam.add(entity.getFurizantimetojitusft7());
+		lstParam.add(entity.getHizantimeyokujitusft7());
+		lstParam.add(entity.getFurizantimeyokujitusft7());
+		lstParam.add(entity.getKyusyututaisyotimetojitusft7());
+		lstParam.add(entity.getKyusyututaisyotimeyokujitusft7());
+		lstParam.add(entity.getAlljskflg());
+		lstParam.add(entity.getKyusyutuflg6());
+		lstParam.add(entity.getKyusyutuflg7());
+		lstParam.add(entity.getKyusyutukbn7());
+		lstParam.add(entity.getKyusyutucntoutmonth());
+		lstParam.add(entity.getKyusyutucntinmonth());
+		lstParam.add(entity.getHizantime6());
+		lstParam.add(entity.getFurizantime6());
+		lstParam.add(entity.getKyusyututime6());
+		lstParam.add(entity.getHizantime7());
+		lstParam.add(entity.getFurizantime7());
+		lstParam.add(entity.getKyusyututime7());
+		lstParam.add(entity.getHizantimesumoutmonth());
+		lstParam.add(entity.getFurizantimesumoutmonth());
+		lstParam.add(entity.getKyusyututimesumoutmonth());
+		lstParam.add(entity.getHizantimesuminmonth());
+		lstParam.add(entity.getFurizantimesuminmonth());
+		lstParam.add(entity.getKyusyututimesuminmonth());
+		lstParam.add(entity.getInsertdate());
+		lstParam.add(entity.getInsertcode());
+		lstParam.add(entity.getInsertprogramid());
+		lstParam.add(entity.getInsertpcname());
+		lstParam.add(entity.getUpdatedate());
+		lstParam.add(entity.getUpdatecode());
+		lstParam.add(entity.getUpdateprogramid());
+		lstParam.add(entity.getUpdatepcname());
+		lstParam.add(entity.getDeleteflg());
+
+		try {
+			return dbHandle.executeUpdate(bufSql, lstParam);
+		} catch (Exception ex) {
+			throw new DaoException(ex.getMessage(), ex);
+		}
+	}
+
+	public int update(EntityT_EMPWEEKKYUSYUTU entity) throws DaoException {
+
+		// sql文
+		StringBuffer bufSql = new StringBuffer();
+		// パラメータリスト
+		List<Object> lstParam = new ArrayList<Object>();
+
+		bufSql.append(" UPDATE ");
+		bufSql.append("T_EMPWEEKKYUSYUTU");
+		bufSql.append(" SET ");
+		bufSql.append("  ENDDAY = ?");
+		bufSql.append(", EIGYOBI6 = ?");
+		bufSql.append(", EIGYOBI7 = ?");
+		bufSql.append(", SYUKINFLGJSK1 = ?");
+		bufSql.append(", SYUKINFLGJSK2 = ?");
+		bufSql.append(", SYUKINFLGJSK3 = ?");
+		bufSql.append(", SYUKINFLGJSK4 = ?");
+		bufSql.append(", SYUKINFLGJSK5 = ?");
+		bufSql.append(", SYUKINFLGJSK6 = ?");
+		bufSql.append(", SYUKINFLGJSK7 = ?");
+		bufSql.append(", HIZANTIMEYOKUJITUJSK6 = ?");
+		bufSql.append(", FURIZANTIMEYOKUJITUJSK6 = ?");
+		bufSql.append(", KYUSYUTUTAISYOTIMEJSK6 = ?");
+		bufSql.append(", HIZANTIMETOJITUJSK7 = ?");
+		bufSql.append(", FURIZANTIMETOJITUJSK7 = ?");
+		bufSql.append(", HIZANTIMEYOKUJITUJSK7 = ?");
+		bufSql.append(", FURIZANTIMEYOKUJITUJSK7 = ?");
+		bufSql.append(", KYUSYUTUTAISYOTIMETOJITUJSK7 = ?");
+		bufSql.append(", KYUSYUTUTAISYOTIMEYOKUJITUJSK7 = ?");
+		bufSql.append(", SYUKINFLGSFT1 = ?");
+		bufSql.append(", SYUKINFLGSFT2 = ?");
+		bufSql.append(", SYUKINFLGSFT3 = ?");
+		bufSql.append(", SYUKINFLGSFT4 = ?");
+		bufSql.append(", SYUKINFLGSFT5 = ?");
+		bufSql.append(", SYUKINFLGSFT6 = ?");
+		bufSql.append(", SYUKINFLGSFT7 = ?");
+		bufSql.append(", HIZANTIMEYOKUJITUSFT6 = ?");
+		bufSql.append(", FURIZANTIMEYOKUJITUSFT6 = ?");
+		bufSql.append(", KYUSYUTUTAISYOTIMESFT6 = ?");
+		bufSql.append(", HIZANTIMETOJITUSFT7 = ?");
+		bufSql.append(", FURIZANTIMETOJITUSFT7 = ?");
+		bufSql.append(", HIZANTIMEYOKUJITUSFT7 = ?");
+		bufSql.append(", FURIZANTIMEYOKUJITUSFT7 = ?");
+		bufSql.append(", KYUSYUTUTAISYOTIMETOJITUSFT7 = ?");
+		bufSql.append(", KYUSYUTUTAISYOTIMEYOKUJITUSFT7 = ?");
+		bufSql.append(", ALLJSKFLG = ?");
+		bufSql.append(", KYUSYUTUFLG6 = ?");
+		bufSql.append(", KYUSYUTUFLG7 = ?");
+		bufSql.append(", KYUSYUTUKBN7 = ?");
+		bufSql.append(", KYUSYUTUCNTOUTMONTH = ?");
+		bufSql.append(", KYUSYUTUCNTINMONTH = ?");
+		bufSql.append(", HIZANTIME6 = ?");
+		bufSql.append(", FURIZANTIME6 = ?");
+		bufSql.append(", KYUSYUTUTIME6 = ?");
+		bufSql.append(", HIZANTIME7 = ?");
+		bufSql.append(", FURIZANTIME7 = ?");
+		bufSql.append(", KYUSYUTUTIME7 = ?");
+		bufSql.append(", HIZANTIMESUMOUTMONTH = ?");
+		bufSql.append(", FURIZANTIMESUMOUTMONTH = ?");
+		bufSql.append(", KYUSYUTUTIMESUMOUTMONTH = ?");
+		bufSql.append(", HIZANTIMESUMINMONTH = ?");
+		bufSql.append(", FURIZANTIMESUMINMONTH = ?");
+		bufSql.append(", KYUSYUTUTIMESUMINMONTH = ?");
+		bufSql.append(", INSERTDATE = ?");
+		bufSql.append(", INSERTCODE = ?");
+		bufSql.append(", INSERTPROGRAMID = ?");
+		bufSql.append(", INSERTPCNAME = ?");
+		bufSql.append(", UPDATEDATE = ?");
+		bufSql.append(", UPDATECODE = ?");
+		bufSql.append(", UPDATEPROGRAMID = ?");
+		bufSql.append(", UPDATEPCNAME = ?");
+		bufSql.append("  WHERE ");
+		bufSql.append("     TENANTCODE = ?");
+		bufSql.append(" AND EMPCODE = ?");
+		bufSql.append(" AND EMPCODE2 = ?");
+		bufSql.append(" AND TAISYONENGETU = ?");
+		bufSql.append(" AND STRDAY = ?");
+		bufSql.append(" AND DELETEFLG = ?");
+
+		lstParam.add(entity.getEndday());
+		lstParam.add(entity.getEigyobi6());
+		lstParam.add(entity.getEigyobi7());
+		lstParam.add(entity.getSyukinflgjsk1());
+		lstParam.add(entity.getSyukinflgjsk2());
+		lstParam.add(entity.getSyukinflgjsk3());
+		lstParam.add(entity.getSyukinflgjsk4());
+		lstParam.add(entity.getSyukinflgjsk5());
+		lstParam.add(entity.getSyukinflgjsk6());
+		lstParam.add(entity.getSyukinflgjsk7());
+		lstParam.add(entity.getHizantimeyokujitujsk6());
+		lstParam.add(entity.getFurizantimeyokujitujsk6());
+		lstParam.add(entity.getKyusyututaisyotimejsk6());
+		lstParam.add(entity.getHizantimetojitujsk7());
+		lstParam.add(entity.getFurizantimetojitujsk7());
+		lstParam.add(entity.getHizantimeyokujitujsk7());
+		lstParam.add(entity.getFurizantimeyokujitujsk7());
+		lstParam.add(entity.getKyusyututaisyotimetojitujsk7());
+		lstParam.add(entity.getKyusyututaisyotimeyokujitujsk7());
+		lstParam.add(entity.getSyukinflgsft1());
+		lstParam.add(entity.getSyukinflgsft2());
+		lstParam.add(entity.getSyukinflgsft3());
+		lstParam.add(entity.getSyukinflgsft4());
+		lstParam.add(entity.getSyukinflgsft5());
+		lstParam.add(entity.getSyukinflgsft6());
+		lstParam.add(entity.getSyukinflgsft7());
+		lstParam.add(entity.getHizantimeyokujitusft6());
+		lstParam.add(entity.getFurizantimeyokujitusft6());
+		lstParam.add(entity.getKyusyututaisyotimesft6());
+		lstParam.add(entity.getHizantimetojitusft7());
+		lstParam.add(entity.getFurizantimetojitusft7());
+		lstParam.add(entity.getHizantimeyokujitusft7());
+		lstParam.add(entity.getFurizantimeyokujitusft7());
+		lstParam.add(entity.getKyusyututaisyotimetojitusft7());
+		lstParam.add(entity.getKyusyututaisyotimeyokujitusft7());
+		lstParam.add(entity.getAlljskflg());
+		lstParam.add(entity.getKyusyutuflg6());
+		lstParam.add(entity.getKyusyutuflg7());
+		lstParam.add(entity.getKyusyutukbn7());
+		lstParam.add(entity.getKyusyutucntoutmonth());
+		lstParam.add(entity.getKyusyutucntinmonth());
+		lstParam.add(entity.getHizantime6());
+		lstParam.add(entity.getFurizantime6());
+		lstParam.add(entity.getKyusyututime6());
+		lstParam.add(entity.getHizantime7());
+		lstParam.add(entity.getFurizantime7());
+		lstParam.add(entity.getKyusyututime7());
+		lstParam.add(entity.getHizantimesumoutmonth());
+		lstParam.add(entity.getFurizantimesumoutmonth());
+		lstParam.add(entity.getKyusyututimesumoutmonth());
+		lstParam.add(entity.getHizantimesuminmonth());
+		lstParam.add(entity.getFurizantimesuminmonth());
+		lstParam.add(entity.getKyusyututimesuminmonth());
+		lstParam.add(entity.getInsertdate());
+		lstParam.add(entity.getInsertcode());
+		lstParam.add(entity.getInsertprogramid());
+		lstParam.add(entity.getInsertpcname());
+		lstParam.add(entity.getUpdatedate());
+		lstParam.add(entity.getUpdatecode());
+		lstParam.add(entity.getUpdateprogramid());
+		lstParam.add(entity.getUpdatepcname());
+		lstParam.add(entity.getTenantcode());
+		lstParam.add(entity.getEmpcode());
+		lstParam.add(entity.getEmpcode2());
+		lstParam.add(entity.getTaisyonengetu());
+		lstParam.add(entity.getStrday());
+		lstParam.add(entity.getDeleteflg());
+
+		try {
+			return dbHandle.executeUpdate(bufSql, lstParam);
+		} catch (Exception ex) {
+			throw new DaoException(ex.getMessage(), ex);
+		}
+	}
+
+	public int logicDelete(EntityT_EMPWEEKKYUSYUTU entity) throws DaoException {
+
+		// sql文
+		StringBuffer bufSql = new StringBuffer();
+		// パラメータリスト
+		List<Object> lstParam = new ArrayList<Object>();
+
+		bufSql.append(" UPDATE ");
+		bufSql.append("T_EMPWEEKKYUSYUTU");
+		bufSql.append(" SET ");
+		bufSql.append("   UPDATEDATE = ?"); // レコード更新日時
+		bufSql.append(",  UPDATECODE = ?"); // レコード更新者コード
+		bufSql.append(",  UPDATEPROGRAMID = ?"); // レコード更新プログラムID
+		bufSql.append(",  UPDATEPCNAME = ?"); // レコード更新コンピュータ名
+		bufSql.append(",  DELETEFLG = 1"); // 削除フラグ
+		bufSql.append("  WHERE ");
+		bufSql.append("     TENANTCODE = ?");
+		bufSql.append(" AND EMPCODE = ?");
+		bufSql.append(" AND EMPCODE2 = ?");
+		bufSql.append(" AND TAISYONENGETU = ?");
+		bufSql.append(" AND STRDAY = ?");
+		bufSql.append(" AND DELETEFLG = 0"); // 削除フラグ
+
+		lstParam.add(entity.getUpdatedate()); // レコード更新日時
+		lstParam.add(entity.getUpdatecode()); // レコード更新者コード
+		lstParam.add(entity.getUpdateprogramid()); // レコード更新プログラムID
+		lstParam.add(entity.getUpdatepcname()); // レコード更新コンピュータ名
+
+		lstParam.add(entity.getTenantcode());
+		lstParam.add(entity.getEmpcode());
+		lstParam.add(entity.getEmpcode2());
+		lstParam.add(entity.getTaisyonengetu());
+		lstParam.add(entity.getStrday());
+
+		try {
+			return dbHandle.executeUpdate(bufSql, lstParam);
+		} catch (Exception ex) {
+			throw new DaoException(ex.getMessage(), ex);
+		}
+	}
+
+	public int delete(EntityT_EMPWEEKKYUSYUTU entity) throws DaoException {
+
+		// sql文
+		StringBuffer bufSql = new StringBuffer();
+		// パラメータリスト
+		List<Object> lstParam = new ArrayList<Object>();
+
+		bufSql.append(" DELETE FROM ");
+		bufSql.append("T_EMPWEEKKYUSYUTU"); // 打刻認証マスタ
+		bufSql.append("  WHERE ");
+		bufSql.append("     TENANTCODE = ?");
+		bufSql.append(" AND EMPCODE = ?");
+		bufSql.append(" AND EMPCODE2 = ?");
+		bufSql.append(" AND TAISYONENGETU = ?");
+		bufSql.append(" AND STRDAY = ?");
+		bufSql.append(" AND DELETEFLG = ? "); // 削除フラグ
+
+		lstParam.add(entity.getTenantcode());
+		lstParam.add(entity.getEmpcode());
+		lstParam.add(entity.getEmpcode2());
+		lstParam.add(entity.getTaisyonengetu());
+		lstParam.add(entity.getStrday());
+		lstParam.add(entity.getDeleteflg()); // 削除フラグ
+
+		try {
+			return dbHandle.executeUpdate(bufSql, lstParam);
+		} catch (Exception ex) {
+			throw new DaoException(ex.getMessage(), ex);
+		}
+	}
+
+	public List<?> selectT_EMPWEEKKYUSYUTU(EntityT_EMPWEEKKYUSYUTU entity, Integer recordCountLimited) throws DaoException {
+
+		// sql文
+		StringBuffer bufSql = new StringBuffer();
+		// パラメータリスト
+		List<Object> lstParam = new ArrayList<Object>();
+
+		bufSql.append(" SELECT ");
+		bufSql.append("  TENANTCODE");
+		bufSql.append(", EMPCODE");
+		bufSql.append(", EMPCODE2");
+		bufSql.append(", TAISYONENGETU");
+		bufSql.append(", STRDAY");
+		bufSql.append(", ENDDAY");
+		bufSql.append(", EIGYOBI6");
+		bufSql.append(", EIGYOBI7");
+		bufSql.append(", SYUKINFLGJSK1");
+		bufSql.append(", SYUKINFLGJSK2");
+		bufSql.append(", SYUKINFLGJSK3");
+		bufSql.append(", SYUKINFLGJSK4");
+		bufSql.append(", SYUKINFLGJSK5");
+		bufSql.append(", SYUKINFLGJSK6");
+		bufSql.append(", SYUKINFLGJSK7");
+		bufSql.append(", HIZANTIMEYOKUJITUJSK6");
+		bufSql.append(", FURIZANTIMEYOKUJITUJSK6");
+		bufSql.append(", KYUSYUTUTAISYOTIMEJSK6");
+		bufSql.append(", HIZANTIMETOJITUJSK7");
+		bufSql.append(", FURIZANTIMETOJITUJSK7");
+		bufSql.append(", HIZANTIMEYOKUJITUJSK7");
+		bufSql.append(", FURIZANTIMEYOKUJITUJSK7");
+		bufSql.append(", KYUSYUTUTAISYOTIMETOJITUJSK7");
+		bufSql.append(", KYUSYUTUTAISYOTIMEYOKUJITUJSK7");
+		bufSql.append(", SYUKINFLGSFT1");
+		bufSql.append(", SYUKINFLGSFT2");
+		bufSql.append(", SYUKINFLGSFT3");
+		bufSql.append(", SYUKINFLGSFT4");
+		bufSql.append(", SYUKINFLGSFT5");
+		bufSql.append(", SYUKINFLGSFT6");
+		bufSql.append(", SYUKINFLGSFT7");
+		bufSql.append(", HIZANTIMEYOKUJITUSFT6");
+		bufSql.append(", FURIZANTIMEYOKUJITUSFT6");
+		bufSql.append(", KYUSYUTUTAISYOTIMESFT6");
+		bufSql.append(", HIZANTIMETOJITUSFT7");
+		bufSql.append(", FURIZANTIMETOJITUSFT7");
+		bufSql.append(", HIZANTIMEYOKUJITUSFT7");
+		bufSql.append(", FURIZANTIMEYOKUJITUSFT7");
+		bufSql.append(", KYUSYUTUTAISYOTIMETOJITUSFT7");
+		bufSql.append(", KYUSYUTUTAISYOTIMEYOKUJITUSFT7");
+		bufSql.append(", ALLJSKFLG");
+		bufSql.append(", KYUSYUTUFLG6");
+		bufSql.append(", KYUSYUTUFLG7");
+		bufSql.append(", KYUSYUTUKBN7");
+		bufSql.append(", KYUSYUTUCNTOUTMONTH");
+		bufSql.append(", KYUSYUTUCNTINMONTH");
+		bufSql.append(", HIZANTIME6");
+		bufSql.append(", FURIZANTIME6");
+		bufSql.append(", KYUSYUTUTIME6");
+		bufSql.append(", HIZANTIME7");
+		bufSql.append(", FURIZANTIME7");
+		bufSql.append(", KYUSYUTUTIME7");
+		bufSql.append(", HIZANTIMESUMOUTMONTH");
+		bufSql.append(", FURIZANTIMESUMOUTMONTH");
+		bufSql.append(", KYUSYUTUTIMESUMOUTMONTH");
+		bufSql.append(", HIZANTIMESUMINMONTH");
+		bufSql.append(", FURIZANTIMESUMINMONTH");
+		bufSql.append(", KYUSYUTUTIMESUMINMONTH");
+		bufSql.append(", INSERTDATE");
+		bufSql.append(", INSERTCODE");
+		bufSql.append(", INSERTPROGRAMID");
+		bufSql.append(", INSERTPCNAME");
+		bufSql.append(", UPDATEDATE");
+		bufSql.append(", UPDATECODE");
+		bufSql.append(", UPDATEPROGRAMID");
+		bufSql.append(", UPDATEPCNAME");
+		bufSql.append(", DELETEFLG");
+		bufSql.append(" FROM ");
+		bufSql.append("  T_EMPWEEKKYUSYUTU ");
+		bufSql.append("  WHERE ");
+		bufSql.append("     TENANTCODE = ?");
+		bufSql.append(" AND EMPCODE = ?");
+		bufSql.append(" AND EMPCODE2 = ?");
+		bufSql.append(" AND TAISYONENGETU = ?");
+		bufSql.append(" AND STRDAY = ?");
+		bufSql.append(" AND DELETEFLG = 0"); // 削除フラグ
+
+		lstParam.add(entity.getTenantcode());
+		lstParam.add(entity.getEmpcode());
+		lstParam.add(entity.getEmpcode2());
+		lstParam.add(entity.getTaisyonengetu());
+		lstParam.add(entity.getStrday());
+
+		bufSql = addRecordCountLimited(bufSql, lstParam, recordCountLimited);
+
+		try {
+			return dbHandle.executeQuery(bufSql, lstParam, EntityT_EMPWEEKKYUSYUTU.class);
+		} catch (Exception ex) {
+			throw new DaoException(ex.getMessage(), ex);
+		}
+	}
+
+
+
+	public List<?> selectT_EMPWEEKKYUSYUTU(EntityT_EMPWEEKKYUSYUTU entity) throws DaoException {
+		return selectT_EMPWEEKKYUSYUTU(entity, null);
+	}
+
+
+
+	public List<?> selectT_EMPWEEKKYUSYUTU(String whereStr, List<Object> lstParam) throws DaoException {
+		return selectT_EMPWEEKKYUSYUTU(whereStr, lstParam, null);
+	}
+
+	public List<?> selectT_EMPWEEKKYUSYUTU(String whereStr, List<Object> lstParam, Integer recordCountLimited) throws DaoException {
+
+		// sql文
+		StringBuffer bufSql = new StringBuffer();
+
+		bufSql.append(" SELECT ");
+		bufSql.append("  TENANTCODE");
+		bufSql.append(", EMPCODE");
+		bufSql.append(", EMPCODE2");
+		bufSql.append(", TAISYONENGETU");
+		bufSql.append(", STRDAY");
+		bufSql.append(", ENDDAY");
+		bufSql.append(", EIGYOBI6");
+		bufSql.append(", EIGYOBI7");
+		bufSql.append(", SYUKINFLGJSK1");
+		bufSql.append(", SYUKINFLGJSK2");
+		bufSql.append(", SYUKINFLGJSK3");
+		bufSql.append(", SYUKINFLGJSK4");
+		bufSql.append(", SYUKINFLGJSK5");
+		bufSql.append(", SYUKINFLGJSK6");
+		bufSql.append(", SYUKINFLGJSK7");
+		bufSql.append(", HIZANTIMEYOKUJITUJSK6");
+		bufSql.append(", FURIZANTIMEYOKUJITUJSK6");
+		bufSql.append(", KYUSYUTUTAISYOTIMEJSK6");
+		bufSql.append(", HIZANTIMETOJITUJSK7");
+		bufSql.append(", FURIZANTIMETOJITUJSK7");
+		bufSql.append(", HIZANTIMEYOKUJITUJSK7");
+		bufSql.append(", FURIZANTIMEYOKUJITUJSK7");
+		bufSql.append(", KYUSYUTUTAISYOTIMETOJITUJSK7");
+		bufSql.append(", KYUSYUTUTAISYOTIMEYOKUJITUJSK7");
+		bufSql.append(", SYUKINFLGSFT1");
+		bufSql.append(", SYUKINFLGSFT2");
+		bufSql.append(", SYUKINFLGSFT3");
+		bufSql.append(", SYUKINFLGSFT4");
+		bufSql.append(", SYUKINFLGSFT5");
+		bufSql.append(", SYUKINFLGSFT6");
+		bufSql.append(", SYUKINFLGSFT7");
+		bufSql.append(", HIZANTIMEYOKUJITUSFT6");
+		bufSql.append(", FURIZANTIMEYOKUJITUSFT6");
+		bufSql.append(", KYUSYUTUTAISYOTIMESFT6");
+		bufSql.append(", HIZANTIMETOJITUSFT7");
+		bufSql.append(", FURIZANTIMETOJITUSFT7");
+		bufSql.append(", HIZANTIMEYOKUJITUSFT7");
+		bufSql.append(", FURIZANTIMEYOKUJITUSFT7");
+		bufSql.append(", KYUSYUTUTAISYOTIMETOJITUSFT7");
+		bufSql.append(", KYUSYUTUTAISYOTIMEYOKUJITUSFT7");
+		bufSql.append(", ALLJSKFLG");
+		bufSql.append(", KYUSYUTUFLG6");
+		bufSql.append(", KYUSYUTUFLG7");
+		bufSql.append(", KYUSYUTUKBN7");
+		bufSql.append(", KYUSYUTUCNTOUTMONTH");
+		bufSql.append(", KYUSYUTUCNTINMONTH");
+		bufSql.append(", HIZANTIME6");
+		bufSql.append(", FURIZANTIME6");
+		bufSql.append(", KYUSYUTUTIME6");
+		bufSql.append(", HIZANTIME7");
+		bufSql.append(", FURIZANTIME7");
+		bufSql.append(", KYUSYUTUTIME7");
+		bufSql.append(", HIZANTIMESUMOUTMONTH");
+		bufSql.append(", FURIZANTIMESUMOUTMONTH");
+		bufSql.append(", KYUSYUTUTIMESUMOUTMONTH");
+		bufSql.append(", HIZANTIMESUMINMONTH");
+		bufSql.append(", FURIZANTIMESUMINMONTH");
+		bufSql.append(", KYUSYUTUTIMESUMINMONTH");
+		bufSql.append(", INSERTDATE");
+		bufSql.append(", INSERTCODE");
+		bufSql.append(", INSERTPROGRAMID");
+		bufSql.append(", INSERTPCNAME");
+		bufSql.append(", UPDATEDATE");
+		bufSql.append(", UPDATECODE");
+		bufSql.append(", UPDATEPROGRAMID");
+		bufSql.append(", UPDATEPCNAME");
+		bufSql.append(", DELETEFLG");
+		bufSql.append(" FROM ");
+		bufSql.append("  T_EMPWEEKKYUSYUTU ");
+		bufSql.append(whereStr);
+
+
+		bufSql = addRecordCountLimited(bufSql, lstParam, recordCountLimited);
+
+		try {
+			return dbHandle.executeQuery(bufSql, lstParam, EntityT_EMPWEEKKYUSYUTU.class);
+		} catch (Exception ex) {
+			throw new DaoException(ex.getMessage(), ex);
+		}
+	}
+
+}

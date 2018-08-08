@@ -74,7 +74,7 @@ namespace SyncFolder
 
             using (StreamWriter sw = process.StandardInput)
             {
-                sw.WriteLine(@"net use \\192.168.255.201\C$ amc4715116 /user:administrator");
+                sw.WriteLine(@"net use \\192.168.246.150\C$ amc4715116 /user:administrator");
                 //sw.WriteLine(@"pushd \\192.168.255.201\C$");
             }
             process.Close();
