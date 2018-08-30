@@ -1,13 +1,31 @@
-// browser.runtime.onMessage.addListener(request => {
-//     alert("lssss");
-//     //alert(JSON.stringify(request.greeting));
-//     //return Promise.resolve({response: "Hi from content script"});
-//     return {response: "ok"};
-// });
 
-function handleMessage(request, sender, sendResponse) {
-    alert("Message from the content script: " + request.greeting);
-    sendResponse({response: "Response from background script"});
+(function() {
+    browser.storage.sync.get("home-tabs").then((tabs) => {
+
+        // alert(JSON.stringify(tabs["home-tabs"]));
+
+        var tabList = document.querySelector("#tab-list");
+        var li = "<ul>";
+
+        for(var tab of tabs["home-tabs"]) {
+            li = li + "<li><a href=" + tab.url + ">" + tab.title + "</a></li>";
+        }
+        li = li + "</ul>";
+
+        tabList.innerHTML = li;
+    }, onError);
+}());
+
+
+
+
+function onError(error) {
+    alert(error);
 }
-  
-browser.runtime.onMessage.addListener(handleMessage);
+
+/* ----- trach code for study ------ */
+
+// browser.runtime.onMessage.addListener(request => {
+//     console.log(request.greeting);
+//     return Promise.resolve({response: "Hi from content script"});
+// });

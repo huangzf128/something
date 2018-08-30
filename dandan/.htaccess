@@ -1,3 +1,4 @@
+Options FollowSymLinks ExecCGI Indexes
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ index.py/$1 [QSA,L]
