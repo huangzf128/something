@@ -15,7 +15,10 @@ csAllTabBtn.addEventListener("click", function(e){
         }
 
         //alert(JSON.stringify(targetTabs));
-        browser.storage.sync.set({ "home-tabs" : targetTabs }).then(() => {
+        var tabObj = {};
+        tabObj[config.storage_tab_key] = targetTabs;
+
+        browser.storage.sync.set(tabObj).then(() => {
             alert("saved!!");
         }, onError);
     });

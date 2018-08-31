@@ -1,18 +1,18 @@
 
 (function() {
-    browser.storage.sync.get("home-tabs").then((tabs) => {
+    browser.storage.sync.get(config.storage_tab_key).then((tabs) => {
 
-        // alert(JSON.stringify(tabs["home-tabs"]));
+        // alert(JSON.stringify(tabs));
 
         var tabList = document.querySelector("#tab-list");
-        var li = "<ul>";
+        var tabHtml = "<ul>";
 
-        for(var tab of tabs["home-tabs"]) {
-            li = li + "<li><a href=" + tab.url + ">" + tab.title + "</a></li>";
+        for(var tab of tabs[config.storage_tab_key]) {
+            tabHtml = tabHtml + "<li><a target='_blank' href=" + tab.url + ">" + tab.title + "</a></li>";
         }
-        li = li + "</ul>";
+        tabHtml = tabHtml + "</ul>";
 
-        tabList.innerHTML = li;
+        tabList.innerHTML = tabHtml;
     }, onError);
 }());
 
