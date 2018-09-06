@@ -1,8 +1,18 @@
 // close and save all tabls
 var csAllTabBtn = document.querySelector("#cs-alltab");
-csAllTabBtn.addEventListener("click", function(e){
-    getAllTabs().then((tabs) => {
+csAllTabBtn.addEventListener("click", function(e) {
+
+    var grps = null;
+    getGroupFromStorage()
+    .then((g) => {
+
+        grps = g[config.storage_group_key] || [];
+        return getAllTabs();
+    })
+    .then((tabs) => {
         var targetTabs = [];
+        var grpCd = getNewGroupCode(grps);
+
         for (var tab of tabs) {
 
             if (!tab.url.match('^about:')) {
@@ -14,13 +24,16 @@ csAllTabBtn.addEventListener("click", function(e){
             };
         }
 
-        //alert(JSON.stringify(targetTabs));
-        var tabObj = {};
-        tabObj[config.storage_tab_key] = targetTabs;
+        setToStorage([config.storage_group_key, getStorageTabKey(grpCd)], 
+                     [grps, targetTabs]);
 
-        browser.storage.sync.set(tabObj).then(() => {
-            alert("saved!!");
-        }, onError);
+        //alert(JSON.stringify(targetTabs));
+        // var tabObj = {};
+        // tabObj[getStorageTabKey(grpCd)] = targetTabs;
+
+        // browser.storage.sync.set(tabObj).then(() => {
+        //     alert("saved!!");
+        // }, onError);
     });
 });
 
@@ -61,12 +74,31 @@ showAllTab.addEventListener("click", function(e) {
     // }, onError);
 });
 
+var showAllTab = document.querySelector("#cs-onetab");
+showAllTab.addEventListener("click", function(e) {
+    browser.storage.sync.clear();
+});
+
 // ------ function ----------
+
+function getGroupFromStorage() {
+    return browser.storage.sync.get(config.storage_group_key);
+}
+
+function getNewGroupCode(grps) {
+    var cnt = grps.length;
+    for(var i = 0; i < cnt; i++) {
+        if (grps.indexOf(i) == -1) {
+            grps.push(i);
+            return i;
+        }
+    }
+    grps.push(cnt);
+    return cnt;
+}
+
 
 function getAllTabs() {
     return browser.tabs.query({});
 }
 
-function onError(error) {
-    alert(error);
-}

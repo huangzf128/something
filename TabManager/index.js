@@ -1,20 +1,31 @@
 var config = {
-    "storage_tab_key" : "tabManager.tabs",
-    "storage_group_key" : "tabManager.group"
+    "storage_tab_key" : "tm.tabs.",
+    "storage_group_key" : "tm.group",
+    "storage_tab_key_prefix" : "tm.tabs.prefix"
 }
 
 // var storageSupporter = {
 //     saveTab: setToStorage  
 // }
 
-function setToStorage(key, value) {
-    var tabObj = {};
-    tabObj[config.storage_tab_key] = targetTabs;
+function setToStorage(keys, values) {
 
-    browser.storage.sync.set(tabObj).then(() => {
+    var saveObj = {};
+    for(var i = 0; i < keys.length; i++) {
+        saveObj[keys[i]] = values[i];
+    }
+
+    browser.storage.sync.set(saveObj).then(() => {
         alert("saved!!");
     }, onError);
-
 }
 
-document.body.style.border = "5px solid red";
+function getStorageTabKey(grpCd) {
+    return config.storage_tab_key_prefix + "_" + grpCd;
+}
+
+function onError(error) {
+    alert(error);
+}
+
+//document.body.style.border = "5px solid red";

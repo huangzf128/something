@@ -1,14 +1,51 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="tabManager.css"/>
-</head>
-<body>
-    <div id="tab-list">
-    </div>
     
+    <link rel="stylesheet" href="/uikit/css/uikit.gradient.min.css" />
+    <link rel="stylesheet" href="/uikit/css/components/sortable.gradient.min.css" />
+    <link rel="stylesheet" href="/uikit/css/components/nestable.gradient.min.css" />
+    <link rel="stylesheet" href="tabManager.css" />
+</head>
+
+<body>
+
+    <!-- <button class="uk-button" data-uk-toggle="{target:'#tab-list'}">...</button> -->
+
+    <div class="uk-grid" style="border:3px solid;">
+<!-- 
+        <nav class="uk-navbar uk-width-1-1" data-uk-toggle="{target:'#tab-list'}">
+            
+            <div class="uk-button-dropdown" data-uk-dropdown>
+                <div class="uk-button">|||</div>
+                <div class="uk-dropdown uk-dropdown-bottom">
+                    <ul class="uk-nav uk-nav-dropdown">
+                        <li><a>rename</a></li>
+                        <li><a>delete</a></li>
+                        <li><a>recover</a></li>
+                    </ul>
+                </div>
+            </div>
+            <span class="g-nm">Group one</span>
+        </nav> -->
+        
+        <ul id="tab-list" class='uk-nestable' data-uk-nestable={maxDepth:1} noChildrenClass></ul>
+
+        <!-- <div id="tab-list"></div> -->
+    </div>
+
+
+
+    <script src="/lib/jquery.js"></script>
     <script src="/index.js"></script>
     <script src="tabManager.js"></script>
+
+    <script src="/uikit/js/uikit.js"></script>
+    <script src="/uikit/js/components/sortable.min.js"></script>
+    <script src="/uikit/js/components/nestable.min.js"></script>
+
 </body>
+
 </html>
