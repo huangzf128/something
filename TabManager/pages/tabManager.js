@@ -1,4 +1,4 @@
-(function() {
+$(function() {
     var grps = [];
     var grp_tabs = {};
     
@@ -12,18 +12,30 @@
         var tabList = document.querySelector("#tab-list");
 
         var tabHtml = "";
+        var i = 0;
         for (var tabs in grp_tabs) {
-            tabHtml = tabHtml + "<li class='uk-nestable-item'><div class='uk-nestable-panel'><ul class='uk-nestable-list'>";
-
+            tabHtml = tabHtml + "<li class=''> \
+                                    <div class=''> \
+                                    {nav-bar} \
+                                    <ul class='uk-sortable' data-uk-sortable=\"{group:'my-group', dragCustomClass:\'uk-panel-box\'}\">";
             for(var tab of grp_tabs[tabs]) {
-                tabHtml = tabHtml + "<li class='uk-nestable-item'><div class='uk-nestable-panel'><a target='_blank' href=" + tab.url + ">" + tab.title + "</a></div></li>";
+                tabHtml = tabHtml + "<li class='uk-panel-box' id='" + (i++) +"'> \
+                                            <a target='_blank' href=" + tab.url + ">" + tab.title + "</a></li>";
             }
-            tabHtml = tabHtml + "</ul></div></li>";
+            tabHtml = tabHtml + "</ul></div></li> <br/><br/>";
         }
 
+        tabHtml = tabHtml.replace(/\{nav-bar\}/g, $("#nav-bar-copy")[0].innerHTML);
         tabList.innerHTML = tabHtml;
 
+
     }, onError);
+
+    $('[data-uk-sortable]').on("change.uk.sortable", function(e, item, dragged){
+        //alert(item);
+        //alert(JSON.stringify(item));
+        //e.stopPropagation();
+    });    
 }());
 
 function getStorage() {
@@ -43,6 +55,8 @@ function getGrpTabMapping (data) {
     }
     return g_ts;
 }
+
+
 
 
 /* ----- trach code for study ------ */
