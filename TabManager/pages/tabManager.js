@@ -14,20 +14,20 @@ $(function() {
         var tabHtml = "";
         var i = 0;
         for (var tabs in grp_tabs) {
-            tabHtml = tabHtml + "<li class=''> \
-                                    <div class=''> \
+            tabHtml = tabHtml + " <div class='draggable'> \
                                     {nav-bar} \
                                     <ul class='uk-sortable' data-uk-sortable=\"{group:'my-group', dragCustomClass:\'uk-panel-box\'}\">";
             for(var tab of grp_tabs[tabs]) {
                 tabHtml = tabHtml + "<li class='uk-panel-box' id='" + (i++) +"'> \
                                             <a target='_blank' href=" + tab.url + ">" + tab.title + "</a></li>";
             }
-            tabHtml = tabHtml + "</ul></div></li> <br/><br/>";
+            tabHtml = tabHtml + "</ul></div> <br/><br/>";
         }
 
         tabHtml = tabHtml.replace(/\{nav-bar\}/g, $("#nav-bar-copy")[0].innerHTML);
         tabList.innerHTML = tabHtml;
 
+        draggableHandler();
 
     }, onError);
 
@@ -35,8 +35,52 @@ $(function() {
         //alert(item);
         //alert(JSON.stringify(item));
         //e.stopPropagation();
-    });    
+    });
+
 }());
+
+
+var draggableHandler = function() {
+
+    $(".draggable" ).draggable({
+        handle: ".dragging",
+        axis: "y",
+        start : function() {
+            // move to front
+            $(this).data("z-index", $(this).css("z-index"));
+            $(this).css("z-index", 999);
+        },
+        stop : function() {
+            // reset z position
+            $(this).css("z-index", $(this).data("z-index"));
+            var currentDiv = this;
+            $(".draggable").each(function(index){
+                if (currentDiv != this) {
+                    isMouseInDiv(this, index);
+                }
+            });
+        }
+    });
+
+    registMousePosition();
+
+    function isMouseInDiv(div, index) {
+        var divRect = div.getBoundingClientRect();
+        if(divRect.top < currentMousePos.y && currentMousePos.y <divRect.bottom) {
+            alert(index);
+        }
+    }
+
+    function registMousePosition () {
+        $(document).mousemove(function(event) {
+            currentMousePos.x = event.pageX;
+            currentMousePos.y = event.pageY;
+        });
+    }
+    
+    this.currentMousePos = { x: -1, y: -1 };
+}
+
 
 function getStorage() {
     return browser.storage.sync.get();
@@ -55,7 +99,6 @@ function getGrpTabMapping (data) {
     }
     return g_ts;
 }
-
 
 
 

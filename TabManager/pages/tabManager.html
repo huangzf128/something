@@ -9,9 +9,15 @@
     <link rel="stylesheet" href="/uikit/css/components/nestable.gradient.min.css" />
     <link rel="stylesheet" href="tabManager.css" />
 
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
     <style>
         .uk-panel-box {
             padding: 5px;                
+        }
+        .draggable {
+            background-color: blanchedalmond;
         }
     </style>
 </head>
@@ -37,17 +43,16 @@
             <span class="g-nm">Group one</span>
         </nav> -->
         
-        <ul id="tab-list" class="uk-sortable" data-uk-sortable="{handleClass:'dragging'}"></ul>
+        <ul id="tab-list"></ul>
 
         <!-- <div id="tab-list"></div> -->
     </div>
 
 
-
     <div id="nav-bar-copy" style="display:none;">
 
         <nav class="uk-navbar uk-width-1-1 dragging" data-uk-toggle="{target:'#tab-list-1'}">
-            <div class="uk-button-dropdown" data-uk-dropdown>
+            <div class="uk-button-dropdown" data-uk-dropdown="{remaintime: 200}">
                 <div class="uk-button">|||</div>
                 <div class="uk-dropdown uk-dropdown-bottom">
                     <ul class="uk-nav uk-nav-dropdown">
@@ -62,6 +67,7 @@
     </div>
 
     <script src="/lib/jquery.js"></script>
+    <script src="/lib/jquery-ui.js"></script>
 
     <script src="/index.js"></script>
     <script src="tabManager.js"></script>
