@@ -31,11 +31,11 @@
             this.pnlHead = new System.Windows.Forms.Panel();
             this.labTitle = new System.Windows.Forms.Label();
             this.pnlBody = new System.Windows.Forms.Panel();
+            this.rdoWavToFlac = new System.Windows.Forms.RadioButton();
             this.btnExecute = new System.Windows.Forms.Button();
             this.btnOpenTarget = new System.Windows.Forms.Button();
             this.labTargetPath = new System.Windows.Forms.Label();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.rdoWavToFlac = new System.Windows.Forms.RadioButton();
             this.pnlHead.SuspendLayout();
             this.pnlBody.SuspendLayout();
             this.SuspendLayout();
@@ -44,16 +44,16 @@
             // 
             this.pnlHead.Controls.Add(this.labTitle);
             this.pnlHead.Location = new System.Drawing.Point(16, 15);
-            this.pnlHead.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pnlHead.Margin = new System.Windows.Forms.Padding(4);
             this.pnlHead.Name = "pnlHead";
-            this.pnlHead.Size = new System.Drawing.Size(889, 99);
+            this.pnlHead.Size = new System.Drawing.Size(737, 99);
             this.pnlHead.TabIndex = 0;
             // 
             // labTitle
             // 
             this.labTitle.AutoSize = true;
             this.labTitle.Font = new System.Drawing.Font("MS UI Gothic", 30F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.labTitle.Location = new System.Drawing.Point(236, 24);
+            this.labTitle.Location = new System.Drawing.Point(170, 20);
             this.labTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labTitle.Name = "labTitle";
             this.labTitle.Size = new System.Drawing.Size(367, 50);
@@ -67,16 +67,27 @@
             this.pnlBody.Controls.Add(this.btnOpenTarget);
             this.pnlBody.Controls.Add(this.labTargetPath);
             this.pnlBody.Location = new System.Drawing.Point(16, 138);
-            this.pnlBody.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pnlBody.Margin = new System.Windows.Forms.Padding(4);
             this.pnlBody.Name = "pnlBody";
-            this.pnlBody.Size = new System.Drawing.Size(889, 309);
+            this.pnlBody.Size = new System.Drawing.Size(737, 309);
             this.pnlBody.TabIndex = 1;
+            // 
+            // rdoWavToFlac
+            // 
+            this.rdoWavToFlac.AutoSize = true;
+            this.rdoWavToFlac.Location = new System.Drawing.Point(24, 95);
+            this.rdoWavToFlac.Name = "rdoWavToFlac";
+            this.rdoWavToFlac.Size = new System.Drawing.Size(118, 19);
+            this.rdoWavToFlac.TabIndex = 3;
+            this.rdoWavToFlac.TabStop = true;
+            this.rdoWavToFlac.Text = "WAV => FLAC";
+            this.rdoWavToFlac.UseVisualStyleBackColor = true;
             // 
             // btnExecute
             // 
             this.btnExecute.Font = new System.Drawing.Font("MS UI Gothic", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnExecute.Location = new System.Drawing.Point(24, 220);
-            this.btnExecute.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnExecute.Margin = new System.Windows.Forms.Padding(4);
             this.btnExecute.Name = "btnExecute";
             this.btnExecute.Size = new System.Drawing.Size(164, 58);
             this.btnExecute.TabIndex = 2;
@@ -87,7 +98,7 @@
             // btnOpenTarget
             // 
             this.btnOpenTarget.Location = new System.Drawing.Point(24, 26);
-            this.btnOpenTarget.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnOpenTarget.Margin = new System.Windows.Forms.Padding(4);
             this.btnOpenTarget.Name = "btnOpenTarget";
             this.btnOpenTarget.Size = new System.Drawing.Size(129, 39);
             this.btnOpenTarget.TabIndex = 1;
@@ -110,25 +121,14 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // rdoWavToFlac
-            // 
-            this.rdoWavToFlac.AutoSize = true;
-            this.rdoWavToFlac.Location = new System.Drawing.Point(24, 95);
-            this.rdoWavToFlac.Name = "rdoWavToFlac";
-            this.rdoWavToFlac.Size = new System.Drawing.Size(118, 19);
-            this.rdoWavToFlac.TabIndex = 3;
-            this.rdoWavToFlac.TabStop = true;
-            this.rdoWavToFlac.Text = "WAV => FLAC";
-            this.rdoWavToFlac.UseVisualStyleBackColor = true;
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(923, 478);
+            this.ClientSize = new System.Drawing.Size(770, 478);
             this.Controls.Add(this.pnlBody);
             this.Controls.Add(this.pnlHead);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "frmMain";
             this.Text = "MediaConverter";
             this.pnlHead.ResumeLayout(false);

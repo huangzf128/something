@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Shell32;
+using MediaConverter;
 
 namespace WindowsFormsApp1
 {
@@ -53,15 +55,35 @@ namespace WindowsFormsApp1
         private void btnExecute_Click(object sender, EventArgs e)
         {
 
+            if (targetFolderPath == null)
+            {
+                MessageBox.Show("フォルダを選択してください。");
+                return;
+            }
+
             List<string> targetFiles = getFileList(targetFolderPath);
             Boolean result = true;
 
+            string outputDir = getFolderName();
+            if (false == Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(targetFolderPath + "\\" + outputDir);
+            }
+
             foreach (string targetFile in targetFiles)
             {
+                Dictionary<int, string> metaInfo = getWavField(targetFile);
 
-                string arguments = "  --output-name " + getSaveFolder() + targetFile.Replace("wav", "flac") + " " + targetFolderPath + "\\" + targetFile;
-
-                MessageBox.Show(arguments);
+                string arguments = " --output-prefix " + outputDir + "\\ " +
+                                    @" -T Title=""" + metaInfo[WavMetaNo.TITLE] + @"""" +
+                                    @" -T Artist=""" + metaInfo[WavMetaNo.ARTIST] + @"""" +
+                                    @" -T Album=""" + metaInfo[WavMetaNo.ALBUMTITLE] + @"""" +
+                                    @" -T Genre=""" + metaInfo[WavMetaNo.GENRE] + @"""" +
+                                    @" -T Comment=""" + metaInfo[WavMetaNo.COMMENT] + @"""" +
+                                    @" -T TrackNumber=""" + metaInfo[WavMetaNo.TRACKNO] + @"""" +
+                                    @" -T Year=""" + metaInfo[WavMetaNo.YEAR] + @"""" +
+                                    @" -T Date=""" + metaInfo[WavMetaNo.RELEASE] + @"""" +
+                                    @" -f --best """ + targetFile + @"""";
 
                 if (false == launchCommandLineApp(arguments))
                 {
@@ -79,10 +101,6 @@ namespace WindowsFormsApp1
             }
         }
 
-        private string getSaveFolder()
-        {
-            return targetFolderPath + "\\" + getLastFolder() + "\\";
-        }
 
         private Boolean launchCommandLineApp(string arguments)
         {            
@@ -90,9 +108,10 @@ namespace WindowsFormsApp1
             startInfo.CreateNoWindow = false;
             startInfo.UseShellExecute = false;
 
-
             startInfo.FileName = Environment.CurrentDirectory + @"\lib\flac.exe";
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+            startInfo.WorkingDirectory = targetFolderPath;
             startInfo.Arguments = arguments;
 
             try
@@ -111,7 +130,7 @@ namespace WindowsFormsApp1
             }
         }
 
-        private string getLastFolder()
+        private string getFolderName()
         {
             return new DirectoryInfo(targetFolderPath).Name;
         }
@@ -128,6 +147,47 @@ namespace WindowsFormsApp1
             }
 
             return files;
+        }
+
+
+
+        private Dictionary<int, string> getWavField(string fileName)
+        {
+
+            Dictionary<int, string> metaInfo = new Dictionary<int, string>();
+
+            ShellClass shell = new ShellClass();
+            Folder f = shell.NameSpace(targetFolderPath);
+            FolderItem item = f.ParseName(fileName);
+
+            //Console.WriteLine(f.GetDetailsOf(item, WavMetaNo.ARTIST)); // 参加アーティスト
+            //Console.WriteLine(f.GetDetailsOf(item, WavMetaNo.TITLE)); // タイトル
+            //Console.WriteLine(f.GetDetailsOf(item, WavMetaNo.GENRE)); // ジャンル
+            //Console.WriteLine(f.GetDetailsOf(item, WavMetaNo.ALBUMTITLE)); // アルバムのタイトル
+            //Console.WriteLine(f.GetDetailsOf(item, WavMetaNo.YEAR)); // 年
+            //Console.WriteLine(f.GetDetailsOf(item, WavMetaNo.TRACKNO)); // トラック番号
+            //Console.WriteLine(f.GetDetailsOf(item, WavMetaNo.COMMENT)); // コメント
+
+            metaInfo.Add(WavMetaNo.ARTIST, f.GetDetailsOf(item, WavMetaNo.ARTIST));
+            metaInfo.Add(WavMetaNo.TITLE, f.GetDetailsOf(item, WavMetaNo.TITLE));
+            metaInfo.Add(WavMetaNo.GENRE, f.GetDetailsOf(item, WavMetaNo.GENRE));
+            metaInfo.Add(WavMetaNo.ALBUMTITLE, f.GetDetailsOf(item, WavMetaNo.ALBUMTITLE));
+            metaInfo.Add(WavMetaNo.YEAR, f.GetDetailsOf(item, WavMetaNo.YEAR));
+            metaInfo.Add(WavMetaNo.TRACKNO, f.GetDetailsOf(item, WavMetaNo.TRACKNO));
+            metaInfo.Add(WavMetaNo.COMMENT, f.GetDetailsOf(item, WavMetaNo.COMMENT));
+            metaInfo.Add(WavMetaNo.RELEASE, f.GetDetailsOf(item, WavMetaNo.RELEASE));
+
+
+            for (int i = 0; i < 10000; i++)
+            { // 10000は適当な大きな値
+                string name = f.GetDetailsOf(null, i);
+                if (!string.IsNullOrEmpty(name))
+                {
+                    Console.WriteLine("{0} : {1}", i, name);
+                }
+            }
+
+            return metaInfo;
         }
     }
 }
