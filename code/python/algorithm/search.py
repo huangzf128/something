@@ -27,23 +27,21 @@ def binarySearch(ary, target, start, end):
 def jumpSearch(ary, target):
     m = math.floor(math.sqrt(len(ary)))
     curPlace = 0
-    for i in range(m):
-        curPlace = i
-        for blockNo in range(m):
-            curPlace += (blockNo * m)
-            if (ary[curPlace] == target):
-                return curPlace
-            elif (ary[curPlace] < target):
-                break
-            else:
-                if (blockNo == m - 1):
-                    return lineSearch(ary[curPlace + 1:], target)
-                else:
-                    return lineSearch(ary[curPlace + 1: (blockNo + 1) * m])
+    for blockNo in range(m):
+        curPlace += (blockNo * m)
+        if (ary[curPlace] == target):
+            return curPlace
+        elif (ary[curPlace] > target):
+            return curPlace + 1 + lineSearch(ary[curPlace - m + 1: curPlace - 1], target)
+    else:
+        return curPlace + 1 + lineSearch(ary[curPlace + 1:], target)
+
+
 
 
 if __name__ == "__main__":
-    ary = ["1", "2", "3", "4", "5"]
+    ary = ["1", "2", "3", "8", "10", "15"]
 
     # lineSearch(ary, "2")
-#    print(binarySearch(ary, "3", 0, len(ary)))
+    # print(binarySearch(ary, "3", 0, len(ary)))
+    print(jumpSearch(ary, "5"))
