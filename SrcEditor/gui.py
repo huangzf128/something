@@ -1,5 +1,5 @@
 import os, fileinput, tkinter, datetime
-import srteditor
+import srteditor, converter
 from tkinter import messagebox
 
 rootPath = os.path.join(os.getcwd(), "")
@@ -16,8 +16,14 @@ def search_file(target_file_path, target_text):
                 return lines
         return None
 
-# --------------- event ---------------------
+def get_shift_time():
+    format = '%H:%M:%S'
+    srt_time = converter.str_2_datetime(ent_srt_time.get(), format)
+    video_time = converter.str_2_datetime(ent_video_time.get(), format)
+    shift_time = video_time - srt_time
+    return shift_time
 
+# ============= event ===================
 def search():
     lines = search_file(os.path.join(rootPath, fileName), ent_keyword.get())
     result = ""
@@ -26,11 +32,10 @@ def search():
     lbl_result_var.set(result)
     # messagebox.showinfo("Hello Python", line)
 
+
 def update():
     target_file_path = os.path.join(rootPath, fileName)
-    min = int(ent_min.get())
-    sec = int(ent_sec.get())
-    during = datetime.timedelta(minutes=min, seconds=sec)
+    during = get_shift_time()
 
     srt_editor = srteditor.SrtEditor()
     for line, new, lineno in srt_editor.inplace(target_file_path):
@@ -38,6 +43,7 @@ def update():
             line = srt_editor.time_shift(line, during)
         new.write(line)
     print("done")
+
 
 def delete():
     target_file_path = os.path.join(rootPath, fileName)
@@ -62,31 +68,32 @@ head = tkinter.Frame(root, borderwidth=2, relief="sunken", bg='yellow', padx=3, 
 head.grid(column=0, row=0)
 
 # title
-lab_title = tkinter.Label(head, text="srt editor")
+lab_title = tkinter.Label(head, text="Srt Editor")
 lab_title.grid(column=0, row=0, columnspan=5)
 
 # search area
 lab_keyword = tkinter.Label(head, text="Keyword")
 ent_keyword = tkinter.Entry(head)
-btnSrch = tkinter.Button(head, text="search", command=search)
+btnSrch = tkinter.Button(head, text="search", command=search, bg="red")
 
 lab_keyword.grid(column=0, row=1, sticky=tkinter.W)
 ent_keyword.grid(column=1, row=1, sticky=tkinter.W)
 btnSrch.grid(column=2, row=1, columnspan=3, sticky=tkinter.E, pady=5, padx=15)
 
 # update
-lab_min = tkinter.Label(head, text="min")
-ent_min = tkinter.Entry(head)
-lab_sec = tkinter.Label(head, text="sec")
-ent_sec = tkinter.Entry(head)
+lab_min = tkinter.Label(head, text="srt time:")
+ent_srt_time = tkinter.Entry(head)
+lab_sec = tkinter.Label(head, text="video time:")
+ent_video_time = tkinter.Entry(head)
+
 lab_lineno = tkinter.Label(head, text="lineno")
 ent_lineno = tkinter.Entry(head)
-btn_upd = tkinter.Button(head, text="update", command=update)
+btn_upd = tkinter.Button(head, text="update", command=update, bg="blue")
 
 lab_min.grid(column=0, row=2, sticky=tkinter.W)
-ent_min.grid(column=1, row=2)
+ent_srt_time.grid(column=1, row=2)
 lab_sec.grid(column=2, row=2, sticky=tkinter.W, padx=5)
-ent_sec.grid(column=3, row=2)
+ent_video_time.grid(column=3, row=2)
 lab_lineno.grid(column=0, row=3, sticky=tkinter.W)
 ent_lineno.grid(column=1, row=3)
 btn_upd.grid(column=2, row=3, columnspan=3, sticky=tkinter.E, pady=5, padx=15)
