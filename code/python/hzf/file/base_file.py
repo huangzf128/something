@@ -10,7 +10,7 @@ class BaseFile:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
 
-    def copy_file_to_folder(self, file_list, output_folder):
+    def copy_files_to_folder(self, file_list, output_folder):
         """ copy file_list to output_folder """
 
         for file in file_list:
@@ -23,10 +23,14 @@ class BaseFile:
                 # os.remove(copy_to_path)
                 shutil.copy2(file, copy_to_path)
 
-    def split_path_last_separator(self, path):
+    def split_path_tail(self, path):
 
         head, tail = ntpath.split(path)
         return (head, tail or ntpath.basename(head))
+
+    def split_path_drive(self, path):
+        head, tail = os.path.splitdrive(path)
+        return (head, tail)
 
     def inplace(self, file_path, encoding='utf-8'):
         """Modify a file in-place, with a consistent encoding."""
