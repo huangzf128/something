@@ -52,7 +52,7 @@ class BaseFile:
             if not os.path.isfile(file):
                 raise Exception('file not exists. file: ' + file)
 
-            (dir_path, f) = self.split_path_last(file)
+            (dir_path, ) = self.split_path_last(file)
             if (dir_path == output_folder):
                 raise Exception('file must move to another folder')
 

@@ -1,10 +1,11 @@
 from hzf.file import base_file
+import os
 
 # ------------------------------ base_file -----
 bfile = base_file.BaseFile()
 
 # ===== folder
-testfolder = r"D:\something.git\code\python\hzf-testcase\temp\testfolder"
+testfolder = os.getcwd() + r"\temp\testfolder"
 bfile.create_folder(testfolder)
 bfile.remove_folder(testfolder)
 
@@ -13,11 +14,11 @@ print(bfile.split_path_drive(testfolder))
 print(bfile.split_path_last(testfolder))
 
 # ===== file
-file_list = [r"D:\something.git\code\python\hzf-testcase\temp\a.txt"]
-bfile.copy_files_to_folder(file_list, r"D:\something.git\code\python\hzf-testcase\temp\output")
+file_list = [os.getcwd() + r"\temp\a.txt"]
+bfile.copy_files_to_folder(file_list, os.getcwd() + r"\temp\output")
 
-remove_file_list = [r"D:\something.git\code\python\hzf-testcase\temp\output\a.txt"]
-bfile.remove_file(remove_file_list)
+remove_file_list = [os.getcwd() + r"\temp\output\a.txt"]
+# bfile.remove_file(remove_file_list)
 
 
 for line, lineno, new_file in bfile.inplace(file_list[0]):

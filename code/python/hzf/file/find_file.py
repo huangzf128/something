@@ -1,6 +1,5 @@
 import os, time
 from hzf.file import base_file
-from hzf.string import str_tools
 
 class FindFile(base_file.BaseFile):
     # find file in search_in_dir
