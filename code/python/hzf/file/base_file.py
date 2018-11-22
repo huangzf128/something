@@ -40,7 +40,7 @@ class BaseFile:
                     yield line, lineno, new_file
 
         file_name, file_extension = os.path.splitext(file_path)
-        os.rename(file_path, file_name + "_" + datetime.datetime.now().strftime("%H%M%S") + "." + file_extension)
+        os.rename(file_path, file_name + "_" + datetime.datetime.now().strftime("%H%M%S") + file_extension)
         os.rename(new_path, file_path)
 
     def copy_files_to_folder(self, file_list, output_folder):
