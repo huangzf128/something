@@ -1,5 +1,5 @@
 import re, os, codecs, datetime
-import date_util
+from hzf.date import date_util
 
 class SrtEditor:
     def __init__(self):
