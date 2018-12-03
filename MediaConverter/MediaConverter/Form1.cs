@@ -51,12 +51,26 @@ namespace WindowsFormsApp1
             }
         }
 
+        private int targetMediaType()
+        {
+            if (rdoWav2Flac.Checked)
+            {
+                return MediaType.WAV;
+            }
+            else if (rdoFlac2Wav.Checked)
+            {
+                return MediaType.FLAC;
+            }
+            return -1;
+
+        }
+
         private void btnExecute_Click(object sender, EventArgs e)
         {
 
-            string file = @"F:\temp\temp\03 Awadama Fever.wav";
-            file = @"F:\temp\temp\04. ヤバッ!.wav";
-            FileUtil.setWavMetaDate(file, null);
+            //string file = @"F:\temp\temp\03 Awadama Fever.wav";
+            //file = @"F:\temp\temp\04. ヤバッ!.wav";
+            //FileUtil.setWavMetaDate(file, null);
 
 
             if (targetFolderPath == null)
@@ -65,14 +79,23 @@ namespace WindowsFormsApp1
                 return;
             }
 
-            List<string> targetFiles = FileUtil.getFileList(targetFolderPath, MediaType.FLAC);
+            List<string> targetFiles = FileUtil.getFileList(targetFolderPath, targetMediaType());
             Boolean result = true;
 
             string outputDir = FileUtil.getOutputFolderName(targetFolderPath);
 
             foreach (string targetFile in targetFiles)
             {
-                Dictionary<int, string> metaInfo = FileUtil.getMediaField(targetFolderPath, targetFile);
+                Dictionary<int, string> metaInfo = null;
+
+                if (FileUtil.isMetadataFileExists(targetFolderPath))
+                {
+                    metaInfo = FileUtil.getMetaDataFromFile(targetFolderPath + "\\" + targetFile);
+                }
+                else
+                {
+                    metaInfo = FileUtil.getMediaField(targetFolderPath, targetFile);
+                }
 
                 string arguments = null;
                 if (rdoWav2Flac.Checked)
@@ -89,12 +112,14 @@ namespace WindowsFormsApp1
                     result = false;
                 }
 
-                if (rdoFlac2Wav.Checked)
+
+                if (chkCreateMetaFile.Checked)
                 {
-                    string wavFilePath = targetFolderPath + "\\" + outputDir + "\\" + targetFile.Replace("flac", "wav");
-                    FileUtil.setWavMetaDate(wavFilePath, metaInfo);
+                    FileUtil.createMetaDataFile(metaInfo, targetFile, targetFolderPath + "\\" + outputDir);
                 }
+
             }
+
 
             if (result)
             {

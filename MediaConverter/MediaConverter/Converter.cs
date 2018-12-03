@@ -23,7 +23,7 @@ namespace MediaConverter
                         @" -T TrackNumber=""" + metaInfo[MediaMetaNo.TRACKNO] + @"""" +
                         @" -T Year=""" + metaInfo[MediaMetaNo.YEAR] + @"""" +
                         @" -T Date=""" + metaInfo[MediaMetaNo.RELEASE] + @"""" +
-                        @" -f --best """ + targetFile + @"""";
+                        @" -f --best --keep-foreign-metadata """ + targetFile + @"""";
             }
             else if (converterType == ConverterType.FLAC2WAV)
             {
@@ -36,7 +36,7 @@ namespace MediaConverter
                         //@" -T TrackNumber=""" + metaInfo[MediaMetaNo.TRACKNO] + @"""" +
                         //@" -T Year=""" + metaInfo[MediaMetaNo.YEAR] + @"""" +
                         //@" -T Date=""" + metaInfo[MediaMetaNo.RELEASE] + @"""" +
-                        @" -f --best -d """ + targetFile + @"""";
+                        @" -f --best -d --keep-foreign-metadata """ + targetFile + @"""";
             }
 
 

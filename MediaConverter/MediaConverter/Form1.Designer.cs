@@ -31,13 +31,14 @@
             this.pnlHead = new System.Windows.Forms.Panel();
             this.labTitle = new System.Windows.Forms.Label();
             this.pnlBody = new System.Windows.Forms.Panel();
+            this.grpConverterType = new System.Windows.Forms.GroupBox();
             this.rdoWav2Flac = new System.Windows.Forms.RadioButton();
+            this.rdoFlac2Wav = new System.Windows.Forms.RadioButton();
             this.btnExecute = new System.Windows.Forms.Button();
             this.btnOpenTarget = new System.Windows.Forms.Button();
             this.labTargetPath = new System.Windows.Forms.Label();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.rdoFlac2Wav = new System.Windows.Forms.RadioButton();
-            this.grpConverterType = new System.Windows.Forms.GroupBox();
+            this.chkCreateMetaFile = new System.Windows.Forms.CheckBox();
             this.pnlHead.SuspendLayout();
             this.pnlBody.SuspendLayout();
             this.grpConverterType.SuspendLayout();
@@ -65,6 +66,7 @@
             // 
             // pnlBody
             // 
+            this.pnlBody.Controls.Add(this.chkCreateMetaFile);
             this.pnlBody.Controls.Add(this.grpConverterType);
             this.pnlBody.Controls.Add(this.btnExecute);
             this.pnlBody.Controls.Add(this.btnOpenTarget);
@@ -75,10 +77,20 @@
             this.pnlBody.Size = new System.Drawing.Size(737, 309);
             this.pnlBody.TabIndex = 1;
             // 
+            // grpConverterType
+            // 
+            this.grpConverterType.Controls.Add(this.rdoWav2Flac);
+            this.grpConverterType.Controls.Add(this.rdoFlac2Wav);
+            this.grpConverterType.Location = new System.Drawing.Point(24, 76);
+            this.grpConverterType.Name = "grpConverterType";
+            this.grpConverterType.Size = new System.Drawing.Size(206, 108);
+            this.grpConverterType.TabIndex = 5;
+            this.grpConverterType.TabStop = false;
+            // 
             // rdoWav2Flac
             // 
             this.rdoWav2Flac.AutoSize = true;
-            this.rdoWav2Flac.Font = new System.Drawing.Font("宋体", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.rdoWav2Flac.Font = new System.Drawing.Font("SimSun", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.rdoWav2Flac.Location = new System.Drawing.Point(21, 24);
             this.rdoWav2Flac.Name = "rdoWav2Flac";
             this.rdoWav2Flac.Size = new System.Drawing.Size(163, 28);
@@ -86,6 +98,18 @@
             this.rdoWav2Flac.TabStop = true;
             this.rdoWav2Flac.Text = "WAV => FLAC";
             this.rdoWav2Flac.UseVisualStyleBackColor = true;
+            // 
+            // rdoFlac2Wav
+            // 
+            this.rdoFlac2Wav.AutoSize = true;
+            this.rdoFlac2Wav.Font = new System.Drawing.Font("SimSun", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.rdoFlac2Wav.Location = new System.Drawing.Point(21, 63);
+            this.rdoFlac2Wav.Name = "rdoFlac2Wav";
+            this.rdoFlac2Wav.Size = new System.Drawing.Size(163, 28);
+            this.rdoFlac2Wav.TabIndex = 4;
+            this.rdoFlac2Wav.TabStop = true;
+            this.rdoFlac2Wav.Text = "FLAC => WAV";
+            this.rdoFlac2Wav.UseVisualStyleBackColor = true;
             // 
             // btnExecute
             // 
@@ -103,7 +127,7 @@
             // btnOpenTarget
             // 
             this.btnOpenTarget.BackColor = System.Drawing.Color.DarkRed;
-            this.btnOpenTarget.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnOpenTarget.Font = new System.Drawing.Font("SimSun", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnOpenTarget.Location = new System.Drawing.Point(24, 26);
             this.btnOpenTarget.Margin = new System.Windows.Forms.Padding(4);
             this.btnOpenTarget.Name = "btnOpenTarget";
@@ -128,27 +152,16 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // rdoFlac2Wav
+            // chkCreateMetaFile
             // 
-            this.rdoFlac2Wav.AutoSize = true;
-            this.rdoFlac2Wav.Font = new System.Drawing.Font("宋体", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.rdoFlac2Wav.Location = new System.Drawing.Point(21, 63);
-            this.rdoFlac2Wav.Name = "rdoFlac2Wav";
-            this.rdoFlac2Wav.Size = new System.Drawing.Size(163, 28);
-            this.rdoFlac2Wav.TabIndex = 4;
-            this.rdoFlac2Wav.TabStop = true;
-            this.rdoFlac2Wav.Text = "FLAC => WAV";
-            this.rdoFlac2Wav.UseVisualStyleBackColor = true;
-            // 
-            // grpConverterType
-            // 
-            this.grpConverterType.Controls.Add(this.rdoWav2Flac);
-            this.grpConverterType.Controls.Add(this.rdoFlac2Wav);
-            this.grpConverterType.Location = new System.Drawing.Point(24, 76);
-            this.grpConverterType.Name = "grpConverterType";
-            this.grpConverterType.Size = new System.Drawing.Size(206, 108);
-            this.grpConverterType.TabIndex = 5;
-            this.grpConverterType.TabStop = false;
+            this.chkCreateMetaFile.AutoSize = true;
+            this.chkCreateMetaFile.Font = new System.Drawing.Font("MS UI Gothic", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.chkCreateMetaFile.Location = new System.Drawing.Point(24, 216);
+            this.chkCreateMetaFile.Name = "chkCreateMetaFile";
+            this.chkCreateMetaFile.Size = new System.Drawing.Size(175, 28);
+            this.chkCreateMetaFile.TabIndex = 6;
+            this.chkCreateMetaFile.Text = "MetaData作成";
+            this.chkCreateMetaFile.UseVisualStyleBackColor = true;
             // 
             // frmMain
             // 
@@ -184,6 +197,7 @@
         private System.Windows.Forms.RadioButton rdoWav2Flac;
         private System.Windows.Forms.RadioButton rdoFlac2Wav;
         private System.Windows.Forms.GroupBox grpConverterType;
+        private System.Windows.Forms.CheckBox chkCreateMetaFile;
     }
 }
 
