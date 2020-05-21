@@ -26,28 +26,29 @@ Partial Class Form1
         Me.Label1 = New System.Windows.Forms.Label()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.Label3 = New System.Windows.Forms.Label()
-        Me.RichTextBox1 = New System.Windows.Forms.RichTextBox()
-        Me.Button1 = New System.Windows.Forms.Button()
+        Me.richTxtStoredDef = New System.Windows.Forms.RichTextBox()
+        Me.btnReload = New System.Windows.Forms.Button()
         Me.btnExeProc = New System.Windows.Forms.Button()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.txtStoredInfo = New System.Windows.Forms.TextBox()
-        Me.Button2 = New System.Windows.Forms.Button()
-        Me.SuspendLayout()
+        Me.btnExeAll = New System.Windows.Forms.Button()
+        Me.btnCreateProc = New System.Windows.Forms.Button()
+        Me.SuspendLayout
         '
         'ListBox1
         '
-        Me.ListBox1.FormattingEnabled = True
+        Me.ListBox1.FormattingEnabled = true
         Me.ListBox1.ItemHeight = 12
         Me.ListBox1.Location = New System.Drawing.Point(12, 66)
         Me.ListBox1.Margin = New System.Windows.Forms.Padding(2)
         Me.ListBox1.Name = "ListBox1"
-        Me.ListBox1.Size = New System.Drawing.Size(144, 508)
+        Me.ListBox1.Size = New System.Drawing.Size(144, 616)
         Me.ListBox1.TabIndex = 0
         '
         'Label1
         '
-        Me.Label1.AutoSize = True
-        Me.Label1.Font = New System.Drawing.Font("MS UI Gothic", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(128, Byte))
+        Me.Label1.AutoSize = true
+        Me.Label1.Font = New System.Drawing.Font("MS UI Gothic", 11!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(128,Byte))
         Me.Label1.ForeColor = System.Drawing.Color.Blue
         Me.Label1.Location = New System.Drawing.Point(16, 43)
         Me.Label1.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
@@ -58,8 +59,8 @@ Partial Class Form1
         '
         'Label2
         '
-        Me.Label2.AutoSize = True
-        Me.Label2.Font = New System.Drawing.Font("MS UI Gothic", 16.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(128, Byte))
+        Me.Label2.AutoSize = true
+        Me.Label2.Font = New System.Drawing.Font("MS UI Gothic", 16!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(128,Byte))
         Me.Label2.ForeColor = System.Drawing.Color.Blue
         Me.Label2.Location = New System.Drawing.Point(304, 17)
         Me.Label2.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
@@ -70,8 +71,8 @@ Partial Class Form1
         '
         'Label3
         '
-        Me.Label3.AutoSize = True
-        Me.Label3.Font = New System.Drawing.Font("MS UI Gothic", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(128, Byte))
+        Me.Label3.AutoSize = true
+        Me.Label3.Font = New System.Drawing.Font("MS UI Gothic", 11!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(128,Byte))
         Me.Label3.ForeColor = System.Drawing.Color.Blue
         Me.Label3.Location = New System.Drawing.Point(176, 43)
         Me.Label3.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
@@ -80,24 +81,24 @@ Partial Class Form1
         Me.Label3.TabIndex = 4
         Me.Label3.Text = "定義"
         '
-        'RichTextBox1
+        'richTxtStoredDef
         '
-        Me.RichTextBox1.Location = New System.Drawing.Point(178, 66)
-        Me.RichTextBox1.Margin = New System.Windows.Forms.Padding(2)
-        Me.RichTextBox1.Name = "RichTextBox1"
-        Me.RichTextBox1.Size = New System.Drawing.Size(949, 512)
-        Me.RichTextBox1.TabIndex = 5
-        Me.RichTextBox1.Text = ""
+        Me.richTxtStoredDef.Location = New System.Drawing.Point(165, 66)
+        Me.richTxtStoredDef.Margin = New System.Windows.Forms.Padding(2)
+        Me.richTxtStoredDef.Name = "richTxtStoredDef"
+        Me.richTxtStoredDef.Size = New System.Drawing.Size(958, 616)
+        Me.richTxtStoredDef.TabIndex = 5
+        Me.richTxtStoredDef.Text = ""
         '
-        'Button1
+        'btnReload
         '
-        Me.Button1.Location = New System.Drawing.Point(12, 15)
-        Me.Button1.Margin = New System.Windows.Forms.Padding(2)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(68, 22)
-        Me.Button1.TabIndex = 8
-        Me.Button1.Text = "再読込み"
-        Me.Button1.UseVisualStyleBackColor = True
+        Me.btnReload.Location = New System.Drawing.Point(12, 15)
+        Me.btnReload.Margin = New System.Windows.Forms.Padding(2)
+        Me.btnReload.Name = "btnReload"
+        Me.btnReload.Size = New System.Drawing.Size(68, 22)
+        Me.btnReload.TabIndex = 8
+        Me.btnReload.Text = "再読込み"
+        Me.btnReload.UseVisualStyleBackColor = true
         '
         'btnExeProc
         '
@@ -106,11 +107,11 @@ Partial Class Form1
         Me.btnExeProc.Size = New System.Drawing.Size(75, 23)
         Me.btnExeProc.TabIndex = 9
         Me.btnExeProc.Text = "実行(Call)"
-        Me.btnExeProc.UseVisualStyleBackColor = True
+        Me.btnExeProc.UseVisualStyleBackColor = true
         '
         'Label4
         '
-        Me.Label4.AutoSize = True
+        Me.Label4.AutoSize = true
         Me.Label4.Location = New System.Drawing.Point(744, 17)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(70, 12)
@@ -120,31 +121,41 @@ Partial Class Form1
         'txtStoredInfo
         '
         Me.txtStoredInfo.Location = New System.Drawing.Point(821, 17)
-        Me.txtStoredInfo.Multiline = True
+        Me.txtStoredInfo.Multiline = true
         Me.txtStoredInfo.Name = "txtStoredInfo"
         Me.txtStoredInfo.Size = New System.Drawing.Size(173, 41)
         Me.txtStoredInfo.TabIndex = 11
         '
-        'Button2
+        'btnExeAll
         '
-        Me.Button2.Location = New System.Drawing.Point(196, 15)
-        Me.Button2.Name = "Button2"
-        Me.Button2.Size = New System.Drawing.Size(75, 23)
-        Me.Button2.TabIndex = 12
-        Me.Button2.Text = "CallAll"
-        Me.Button2.UseVisualStyleBackColor = True
+        Me.btnExeAll.Location = New System.Drawing.Point(196, 15)
+        Me.btnExeAll.Name = "btnExeAll"
+        Me.btnExeAll.Size = New System.Drawing.Size(75, 23)
+        Me.btnExeAll.TabIndex = 12
+        Me.btnExeAll.Text = "CallAll"
+        Me.btnExeAll.UseVisualStyleBackColor = true
+        '
+        'btnCreateProc
+        '
+        Me.btnCreateProc.Location = New System.Drawing.Point(1018, 15)
+        Me.btnCreateProc.Name = "btnCreateProc"
+        Me.btnCreateProc.Size = New System.Drawing.Size(75, 23)
+        Me.btnCreateProc.TabIndex = 13
+        Me.btnCreateProc.Text = "Create"
+        Me.btnCreateProc.UseVisualStyleBackColor = true
         '
         'Form1
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(6!, 12!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(1163, 589)
-        Me.Controls.Add(Me.Button2)
+        Me.ClientSize = New System.Drawing.Size(1135, 691)
+        Me.Controls.Add(Me.btnCreateProc)
+        Me.Controls.Add(Me.btnExeAll)
         Me.Controls.Add(Me.txtStoredInfo)
         Me.Controls.Add(Me.Label4)
         Me.Controls.Add(Me.btnExeProc)
-        Me.Controls.Add(Me.Button1)
-        Me.Controls.Add(Me.RichTextBox1)
+        Me.Controls.Add(Me.btnReload)
+        Me.Controls.Add(Me.richTxtStoredDef)
         Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.Label1)
@@ -152,18 +163,19 @@ Partial Class Form1
         Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "Form1"
         Me.Text = "Watcher"
-        Me.ResumeLayout(False)
-        Me.PerformLayout()
+        Me.ResumeLayout(false)
+        Me.PerformLayout
 
-    End Sub
+End Sub
     Friend WithEvents ListBox1 As System.Windows.Forms.ListBox
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents Label3 As System.Windows.Forms.Label
-    Friend WithEvents RichTextBox1 As System.Windows.Forms.RichTextBox
-    Friend WithEvents Button1 As System.Windows.Forms.Button
+    Friend WithEvents richTxtStoredDef As System.Windows.Forms.RichTextBox
+    Friend WithEvents btnReload As System.Windows.Forms.Button
     Friend WithEvents btnExeProc As System.Windows.Forms.Button
     Friend WithEvents Label4 As Label
     Friend WithEvents txtStoredInfo As TextBox
-    Friend WithEvents Button2 As Button
+    Friend WithEvents btnExeAll As Button
+    Friend WithEvents btnCreateProc As Button
 End Class

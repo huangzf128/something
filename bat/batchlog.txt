@@ -1,0 +1,1 @@
+M       https://10.83.240.217/svn/kobutsu/sizpp_batch/src/main/java/com/fpsol/sizpp/batch/sfpc11/bat/Sfpc11.java

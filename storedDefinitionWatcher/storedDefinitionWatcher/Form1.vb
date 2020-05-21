@@ -53,7 +53,7 @@ Public Class Form1
             myReader.Read()
             Dim strText As String = GetValue(myReader, "DESC_VALUE")
 
-            Me.RichTextBox1.Text = Replace(strText, vbCr, vbCrLf)
+            Me.richTxtStoredDef.Text = Replace(strText, vbCr, vbCrLf)
             myReader.Close()
 
             ShowStoredInfo(Item.Key)
@@ -66,10 +66,10 @@ Public Class Form1
 
     End Sub
 
-    Private Sub Button1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button1.Click
+    Private Sub Button1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnReload.Click
 
         Me.ListBox1.Items.Clear()
-        Me.RichTextBox1.Text = String.Empty
+        Me.richTxtStoredDef.Text = String.Empty
 
         Dim myReader As SymfowareDataReader = Nothing
         Try
@@ -149,6 +149,13 @@ Public Class Form1
         End Try
     End Sub
 
+
+    Private Sub BtnCreateProc_Click(sender As Object, e As EventArgs) Handles btnCreateProc.Click
+
+        CreateProcedure()
+
+    End Sub
+
 #Region "Method"
 
     ''' <summary>
@@ -165,13 +172,26 @@ Public Class Form1
         End Try
 
         Try
-            conn = New SymfowareConnection("DATA SOURCE=10.83.240.210;PORT=2050;" & "INITIAL CATALOG=CRMDB;USER ID=crmate;PASSWORD=7QXb7ytgb9")
+            conn = New SymfowareConnection("DATA SOURCE=10.83.240.217;PORT=2050;" & "INITIAL CATALOG=CRMDB;USER ID=crmate;PASSWORD=7QXb7ytgb9")
             conn.Open()
         Catch ex As Exception
             MessageBox.Show("Failed to connect to data source")
         End Try
 
     End Sub
+
+    Private Function CreateProcedure() As Boolean
+
+        GetConnection()
+        Dim str As String = richTxtStoredDef.Text
+        Dim command As New SymfowareCommand(str, conn)
+
+        command.ExecuteNonQuery()
+
+        Return True
+
+    End Function
+
 
     ''' <summary>
     ''' ストアド名リストを取得する
@@ -253,7 +273,7 @@ Public Class Form1
     End Function
 
 
-    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles btnExeAll.Click
 
         Dim tableNames As String() = New String() {"CO_GENERAL_ENTITY_TBT_01", "CO_GENERAL_ENTITY_TBT_02", "CO_GENERAL_ENTITY_TBT_03",
                                                     "CO_GENERAL_ENTITY_TBT_04", "CO_GENERAL_ENTITY_TBT_05", "CO_GENERAL_ENTITY_TBT_06",
@@ -372,6 +392,7 @@ Public Class Form1
         command.Dispose()
 
     End Sub
+
 
 #End Region
 

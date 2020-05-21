@@ -1,0 +1,8 @@
+M       https://10.83.240.217/svn/kobutsu/Rest/src/main/java/com/fpsol/sizpp/entity/EigyosyoEntity.java
+M       https://10.83.240.217/svn/kobutsu/Rest/src/main/java/com/fpsol/sizpp/service/impl/Kss007ServiceImpl.java
+M       https://10.83.240.217/svn/kobutsu/Rest/src/main/java/com/fpsol/sizpp/service/impl/Kss008ServiceImpl.java
+M       https://10.83.240.217/svn/kobutsu/Rest/src/main/java/com/fpsol/sizpp/service/impl/Kss006ServiceImpl.java
+M       https://10.83.240.217/svn/kobutsu/Rest/src/main/java/com/fpsol/sizpp/dao/CoGeneralEntityTbt08Dao.java
+M       https://10.83.240.217/svn/kobutsu/Rest/src/main/java/com/fpsol/sizpp/dao/impl/CoGeneralEntityTbt08DaoImpl.java
+M       https://10.83.240.217/svn/kobutsu/Rest/src/main/webapp/WEB-INF/views/kss007.jsp
+M       https://10.83.240.217/svn/kobutsu/Rest/src/main/webapp/WEB-INF/views/kss008.jsp
