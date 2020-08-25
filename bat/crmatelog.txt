@@ -1,2 +1,16 @@
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/StoredProcedure/CO38F02_INS.sql
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/StoredProcedure/CO3aF02_INS.sql
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/StoredProcedure/CO3aF03_UPD.sql
+A       https://10.83.240.217/svn/kobutsu/sizpp_crmate/StoredProcedure/KANRISYA_IKO.sql
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO3aF01P.js
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO38F02P.js
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO38F03P.js
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO38F04P.js
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO39F01P.js
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO39F02P.js
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO39F03P.js
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO39F04P.js
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO3aF02P.js
 M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO3aF03P.js
 M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO3aF04P.js
+M       https://10.83.240.217/svn/kobutsu/sizpp_crmate/JavaScript/CO99F99.js

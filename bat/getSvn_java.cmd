@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 set svnUrl=https://10.83.240.217/svn/kobutsu/sizpp_batch/src
 rem set startDate=2020-02-10
-set startDate=2020-05-19
+set startDate=2020-08-21
 set "preA=A       "
 set "preM=M       "
 set "preM1= M      "
