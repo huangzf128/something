@@ -1,4 +1,4 @@
-import time, getResource
+import time, getResource, os
 
 
 class FetchPic:
@@ -31,8 +31,9 @@ class FetchPic:
         self.get_img(img_urls, referers)
 
 
+os.environ['PATH'] += ';F:\\repo\\something\\code\\python\\web;'
 fetch_pic = FetchPic()
-pageBase = "https://www.meitulu.com/item/[folder][n].html"
+pageBase = "https://www.meitulu.cn/item/[folder][n].html"
 imgBase = "https://mtl.ttsqgs.com/images/img/[folder]/[n].jpg"
 folderNum = "13747"
 fetch_pic.fetch(pageBase, imgBase, folderNum)

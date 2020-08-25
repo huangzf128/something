@@ -1,7 +1,6 @@
-import time, getResource
+import time, getResource, os
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-
 
 class FetchPic:
 
@@ -42,6 +41,7 @@ class FetchPic:
     def tearDown(self):
         self.driver.close()
 
+os.environ['PATH'] += ';F:\\repo\\something\\code\\python\\web;'
 
 fetch_pic = FetchPic()
 fetch_pic.fetch("https://www.instagram.com/girleatworld/")
