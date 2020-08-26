@@ -56,6 +56,7 @@ def interpolation(ary, target, start, end):
 
 
 if __name__ == "__main__":
+    print("dfs")
     ary = [1, 2, 3, 8, 10, 15]
 
     # print(lineSearch(ary, "2"))
