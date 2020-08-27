@@ -10,11 +10,13 @@ class Image_Tool:
         self.root_dir = root_dir
         self.out_dir = out_dir
 
-    def converter(self, img_name, before, after):
+    def converter(self, img_name, to_type):
         img = Image.open(os.path.join(self.root_dir, img_name))
-        # RGBA(png)→RGB(jpg)へ変換
-        img = img.convert('RGB')
-        img.save(os.path.join(self.out_dir, img_name.replace(before, after)), "JPEG", quality=95)
+
+        if (to_type == JPG):
+            # RGBA(png)→RGB(jpg)へ変換
+            img = img.convert('RGB')
+            img.save(os.path.join(self.out_dir, os.path.splitext(img_name)[0] + ".jpg"), "JPEG", quality=95)
 
     def crop(self, img_name):
         img = Image.open(os.path.join(self.root_dir, img_name))
@@ -31,5 +33,5 @@ if __name__ == '__main__':
     for filepath in filepath_list:
         # ファイルパスからファイル名を取得
         file_name = os.path.basename(filepath)
-        img_tools.converter(file_name, PNG, JPG)
+        img_tools.converter(file_name, JPG)
         img_tools.crop(file_name.replace("png", "jpg"))
