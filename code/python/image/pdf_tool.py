@@ -21,9 +21,10 @@ class Pdf_Tool:
 if __name__ == "__main__":
 
     root = os.path.join(os.getcwd(), "output")
-    for i in range(1, 2):
+    root = "F:/E-Book/Temp/JPG"
+    for i in range(1, 4):
         no = str(i).zfill(1)
-        filepath_list = glob.glob(os.path.join(root, no + "/*.jpg"))
+        filepath_list = sorted(glob.glob(os.path.join(root, no + "/*.jpg")), key=os.path.basename)
         pdf = Pdf_Tool((2040, 1512))
         pdf.create(filepath_list, (0, 0, 2040, 1512))
         pdf.save(os.path.join(root, no), no + ".pdf")

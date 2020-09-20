@@ -18,7 +18,7 @@ class BaseFile:
     def split_path_last(self, path):
         # split path at last separator, the 'last' maybe a file or directory
         init, last = ntpath.split(path)
-        return (init, last or ntpath.basename(init))
+        return init, last or ntpath.basename(init)
 
     def split_path_drive(self, path):
         # split path at first separator
@@ -26,7 +26,6 @@ class BaseFile:
         return (drive, tail)
 
     # --------------- --------------- --------------- file ---------------
-
     def inplace(self, file_path, encoding='utf-8'):
         """ Modify a file in-place, with a consistent encoding."""
         """ this need work with for """
@@ -51,8 +50,8 @@ class BaseFile:
         for file in file_list:
             if not os.path.isfile(file):
                 raise Exception('file not exists. file: ' + file)
-
-            (dir_path, ) = self.split_path_last(file)
+            
+            dir_path, _ = self.split_path_last(file)
             if (dir_path == output_folder):
                 raise Exception('file must move to another folder')
 
