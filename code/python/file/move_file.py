@@ -1,4 +1,4 @@
-from library.pkg.file import find_file
+from ...py-module.hzf.file import find_file
 
 root_folder = r"E:\workspaceold\abyy\azkw\history\2015\08\20150829010101-20150829010101"
 # root_folder = r"D:\VB\WTMVB"

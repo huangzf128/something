@@ -1,10 +1,7 @@
 from file import find_file
 
-root_folder = r"C:\Users\FULONG\Desktop\20171113_1_最新SRC_VB\VB\work\S02"
-# root_folder = r"D:\VB\WTMVB"
-# root_folder = "input"
-# out_folder = r"output"
-out_folder = r"D:\VB\WTMVB\work\S02"
+root_folder = r"C:\Users\fulong\Desktop\ja"
+out_folder = r"C:\Users\fulong\Desktop\to"
 
 exclude_files = [r"licenses\.licx", r"vssver2\.scc", r".*\.sln$",
                  r".*\.vbproj$", r".*\.vbproj.user$", r"app.config"]
