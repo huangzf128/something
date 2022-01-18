@@ -1,0 +1,8 @@
+{
+    "python.autoComplete.extraPaths": [
+        "../../pkg/"
+    ],
+    "python.analysis.extraPaths": [
+        "../../pkg/"
+    ]
+}

@@ -1,17 +1,21 @@
 import os, time
 from hzf.file import base_file
 
+
 class FindFile(base_file.BaseFile):
-    # find file in search_in_dir
+    """ find file in search_in_dir """
 
     COMPARE_EQUALS = 0
     COMPARE_GREANTER = 1
     COMPARE_LESS = 2
 
     def __init__(self, search_in_dir):
+        super().__init__()
         self.search_in_dir = search_in_dir
 
     def get_file_in_dir(self, d_names):
+        """ get all files path in d_names
+        """
         return self.get_file_by_name(None, d_names)
 
     def get_file_by_name(self, f_names, d_names=None, exclude_d_names=None):
@@ -30,7 +34,7 @@ class FindFile(base_file.BaseFile):
 
             if d_names is not None:
                 for d in d_names:
-                    if d in (sub_path + "\\"):
+                    if d in sub_path + "\\":
                         break
                 else:
                     continue
@@ -55,10 +59,10 @@ class FindFile(base_file.BaseFile):
                 updatetime = time.strftime('%Y/%m/%d %H:%M', time.localtime(os.path.getmtime(file_path)))
                 if ((compare_type == self.COMPARE_EQUALS
                      and updatetime == modifiedtime)
-                    or (compare_type == self.COMPARE_GREANTER
-                        and updatetime > modifiedtime)
-                    or (compare_type == self.COMPARE_LESS
-                        and updatetime < modifiedtime)):
+                        or (compare_type == self.COMPARE_GREANTER
+                            and updatetime > modifiedtime)
+                        or (compare_type == self.COMPARE_LESS
+                            and updatetime < modifiedtime)):
 
                     file_list.append(os.path.abspath(file_path))
 

@@ -1,4 +1,6 @@
-import shutil, os, ntpath, codecs, stat, datetime
+from pickle import FALSE, TRUE
+import shutil, os, ntpath, codecs, datetime, stat
+
 
 class BaseFile:
     # base class for handling file
@@ -25,7 +27,25 @@ class BaseFile:
         drive, tail = os.path.splitdrive(path)
         return (drive, tail)
 
+    def is_parent_path(self, parent_path, child_path):
+        # Smooth out relative path names, note: if you are concerned about symbolic links, you should use os.path.realpath too
+        parent_path = os.path.abspath(parent_path)
+        child_path = os.path.abspath(child_path)
+
+        # Compare the common path of the parent and child path with the common path of just the parent path. 
+        # Using the commonpath method on just the parent path will regularise the path name in the same way as the comparison that deals with both paths, removing any trailing path separator
+        return os.path.commonpath([parent_path]) == os.path.commonpath([parent_path, child_path])
+
     # --------------- --------------- --------------- file ---------------
+    def copy_files_to_folder(self, file_list, output_dir):
+        """ copy file to output_dir,  should be check before call this function """
+        for f in file_list:
+            try:
+                shutil.copy2(f, output_dir)
+            except Exception:
+                os.chmod(output_dir, stat.S_IWRITE)
+                shutil.copy2(f, output_dir)
+
     def inplace(self, file_path, encoding='utf-8'):
         """ Modify a file in-place, with a consistent encoding."""
         """ this need work with for """
@@ -42,28 +62,6 @@ class BaseFile:
         # os.rename(file_path, file_name + "_" + datetime.datetime.now().strftime("%H%M%S") + file_extension)
         self.remove_file([file_path])
         os.rename(new_path, file_path)
-
-    def copy_files_to_folder(self, file_list, output_folder):
-        """ copy file_list to output_folder """
-
-        self.create_folder(output_folder)
-
-        for file in file_list:
-            if not os.path.isfile(file):
-                raise Exception('file not exists. file: ' + file)
-            
-            dir_path, _ = self.split_path_last(file)
-            if (dir_path == output_folder):
-                raise Exception('file must move to another folder')
-
-            copy_to_path = file.replace(dir_path, output_folder)
-            self.create_folder(os.path.dirname(copy_to_path))
-            try:
-                shutil.copy2(file, copy_to_path)
-            except Exception:
-                os.chmod(copy_to_path, stat.S_IWRITE)
-                # os.remove(copy_to_path)
-                shutil.copy2(file, copy_to_path)
 
     def remove_file(self, file_list):
         for file in file_list:
