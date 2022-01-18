@@ -32,19 +32,12 @@ class BaseFile:
         parent_path = os.path.abspath(parent_path)
         child_path = os.path.abspath(child_path)
 
-        # Compare the common path of the parent and child path with the common path of just the parent path. 
-        # Using the commonpath method on just the parent path will regularise the path name in the same way as the comparison that deals with both paths, removing any trailing path separator
+        # Compare the common path of the parent and child path with the common path of just the parent path.
+        # Using the commonpath method on just the parent path will regularise the path name in the same way as the comparison that deals with both paths,
+        # removing any trailing path separator
         return os.path.commonpath([parent_path]) == os.path.commonpath([parent_path, child_path])
 
     # --------------- --------------- --------------- file ---------------
-    def copy_files_to_folder(self, file_list, output_dir):
-        """ copy file to output_dir,  should be check before call this function """
-        for f in file_list:
-            try:
-                shutil.copy2(f, output_dir)
-            except Exception:
-                os.chmod(output_dir, stat.S_IWRITE)
-                shutil.copy2(f, output_dir)
 
     def inplace(self, file_path, encoding='utf-8'):
         """ Modify a file in-place, with a consistent encoding."""
