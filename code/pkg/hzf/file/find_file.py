@@ -13,7 +13,7 @@ class FindFile(base_file.BaseFile):
         super().__init__()
         self.search_in_dir = search_in_dir
 
-    def get_file_in_dir(self, d_names):
+    def get_file_in_dir(self, d_names=None):
         """ get all files path in d_names
         """
         return self.get_file_by_name(None, d_names)

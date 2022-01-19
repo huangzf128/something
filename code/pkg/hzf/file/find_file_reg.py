@@ -9,9 +9,6 @@ class FindFileReg(base_file.BaseFile):
     def __init__(self, search_in_dir):
         self.search_in_dir = search_in_dir
 
-    def get_file_in_dir_reg(self, d_names):
-        return self.get_file_by_name_reg(None, d_names)
-
     def get_file_by_name_reg(self, f_name_patterns, d_names=None, exclude_d_names=None):
         """     None for all. eg: root/a/b/c/d
                 d_names: more level more accuracy. "/" must at head and tail.  eg: /a/b/, /b/, /a/b/c/

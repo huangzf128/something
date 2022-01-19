@@ -1,6 +1,7 @@
 import os, re
 from hzf.file import base_file
 
+
 class ModifyFile(base_file.BaseFile):
 
     def __init__(self):

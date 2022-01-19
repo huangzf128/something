@@ -2,6 +2,7 @@ import os
 from hzf.file import base_file
 from hzf.string import similar
 
+
 class FindFileSimilar(base_file.BaseFile):
     # find file in search_in_dir
 

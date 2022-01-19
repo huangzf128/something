@@ -1,5 +1,5 @@
 from distutils.file_util import copy_file
-import os, time, shutil, stat
+import os, shutil, stat
 from hzf.file import base_file
 
 
@@ -52,5 +52,9 @@ class CopyFile(base_file.BaseFile):
             copy_to_path = file.replace(root_folder, output_folder)
             copy_file_list.append((file, copy_to_path))
 
-        for f, to_file in copy_file_list:
-            shutil.copyfile(f, to_file)
+        for f, dest_fpath in copy_file_list:
+            try:
+                shutil.copyfile(f, dest_fpath)
+            except Exception:
+                os.makedirs(os.path.dirname(dest_fpath), exist_ok=True)
+                shutil.copyfile(f, dest_fpath)

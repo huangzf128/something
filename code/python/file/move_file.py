@@ -4,16 +4,14 @@ tackle file
 import sys
 sys.path.append("../../pkg")
 
-from hzf.file import find_file
+from hzf.file import copy_file, find_file
 
-ROOT_PATH = r"C:\Users\fulong\Desktop\ja"
-OUTPUT = r"C:\Users\fulong\Desktop\to"
+root_dir = r"C:\Users\fulong\Desktop\ja"
+output_dir = r"C:\Users\fulong\Desktop\to"
 
-exclude_files = []
-exclude_folders = []
+finder = find_file.FindFile(root_dir)
+file_list = finder.get_file_in_dir()
 
-file_finder = find_file.FindFile(ROOT_PATH)
-files = file_finder.get_file_in_dir(None)
-file_finder.copy_files_to_folder(files, OUTPUT)
-
-print("end")
+file = copy_file.CopyFile()
+# file.copy_files_keep_structure(file_list, output_dir, root_dir)
+file.copy_files_nokeep_structure(file_list, output_dir)
