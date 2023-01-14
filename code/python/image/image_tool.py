@@ -3,6 +3,7 @@ from PIL import Image
 
 PNG = "png"
 JPG = "jpg"
+IMG_FOLDER = r"D:/img/RAHEE"
 
 class Image_Tool:
 
@@ -23,20 +24,20 @@ class Image_Tool:
     def crop(self):
         self.img = self.img.crop((260, 0, self.img.size[0] - 260, self.img.size[1]))
 
+    def resize(self, rate):
+        self.img = self.img.resize((int(self.img.size[0] * rate), int(self.img.size[1] * rate)))
+
 
 if __name__ == '__main__':
 
     img = Image_Tool()
 
-    for i in range(1, 2):
-        no = str(i).zfill(1)
-        out_dir = os.path.join(os.getcwd(), "output/" + no)
-
-        # .pngファイルをリストで取得する
-        filepath_list = glob.glob(os.path.join(os.getcwd(), no + "/*.png"))
-        for filepath in filepath_list:
-            img.load(filepath)
-            img.converter(JPG)
-            img.crop()
-            file_name = os.path.basename(filepath)
-            img.save_jpg(out_dir, re.sub(PNG, JPG, file_name, flags=re.IGNORECASE))
+    # .pngファイルをリストで取得する
+    filepath_list = glob.glob(os.path.join(IMG_FOLDER, "*.png"))
+    for filepath in filepath_list:
+        img.load(filepath)
+        img.converter(JPG)
+        # img.crop()
+        img.resize(0.6)
+        file_name = os.path.basename(filepath)
+        img.save_jpg(os.path.join(IMG_FOLDER, "output"), re.sub(PNG, JPG, file_name, flags=re.IGNORECASE))
