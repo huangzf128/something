@@ -1,17 +1,12 @@
-"""
-tackle file
-"""
-import sys, re, os
-sys.path.append("../../pkg")
+import re
+from hzf.file import find_file
 
-from hzf.file import copy_file, find_file
+root_folder = r"D:\work\shinsei"
 
-root_dir = r"D:\E-Book\人物传记\bin\aimi\aimi  Shin Shuku Satsu 2 (219)"
-output_dir = r"C:\Users\fulong\Desktop\to"
-
-finder = find_file.FindFile(root_dir)
-file_list = finder.get_file_in_dir()
+finder = find_file.FindFile(root_folder)
+file_list = finder.get_all_file()
 
 for f in file_list:
-    new_f = re.sub(r'^(.*?)0(.+\.jpeg)$', r'\g<1>1\2', f)
+    new_f = re.sub(r'^(.+?)(\.png)$', r'\g<2>----\g<1>', f)
     # os.rename(f, new_f)
+    print(new_f)

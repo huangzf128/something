@@ -34,7 +34,7 @@ class CopyFile(base_file.BaseFile):
                 os.chmod(output_folder, stat.S_IWRITE)
                 shutil.copy2(f, output_folder)
 
-    def copy_files_keep_structure(self, file_list, output_folder, root_folder, ignore_notexist=True):
+    def copy_files_keep_structure(self, file_list, from_folder, output_folder, ignore_notexist=True):
         """ copy file_list to output_folder """
 
         copy_file_list = []
@@ -49,7 +49,7 @@ class CopyFile(base_file.BaseFile):
             if (dir_path == output_folder):
                 continue
 
-            copy_to_path = file.replace(root_folder, output_folder)
+            copy_to_path = file.replace(from_folder, output_folder)
             copy_file_list.append((file, copy_to_path))
 
         for f, dest_fpath in copy_file_list:
