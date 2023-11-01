@@ -9,6 +9,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FetchRepository", "FetchRep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SymfoTools", "SymfoTools\SymfoTools\SymfoTools.csproj", "{EBE2B0EB-AD6E-432E-B00A-F48BFF21B33F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBSupporter", "DBSupporter\DBSupporter.csproj", "{8F045624-48B3-41B4-8A5E-0A9E0222D3DD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{90D31CF0-DDCF-4361-BCFB-56AD57CBE06D}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{8AC21FDA-DB94-41FB-8B8D-DEB3EE687420}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +36,14 @@ Global
 		{EBE2B0EB-AD6E-432E-B00A-F48BFF21B33F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBE2B0EB-AD6E-432E-B00A-F48BFF21B33F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBE2B0EB-AD6E-432E-B00A-F48BFF21B33F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F045624-48B3-41B4-8A5E-0A9E0222D3DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F045624-48B3-41B4-8A5E-0A9E0222D3DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F045624-48B3-41B4-8A5E-0A9E0222D3DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F045624-48B3-41B4-8A5E-0A9E0222D3DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AC21FDA-DB94-41FB-8B8D-DEB3EE687420}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AC21FDA-DB94-41FB-8B8D-DEB3EE687420}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AC21FDA-DB94-41FB-8B8D-DEB3EE687420}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AC21FDA-DB94-41FB-8B8D-DEB3EE687420}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

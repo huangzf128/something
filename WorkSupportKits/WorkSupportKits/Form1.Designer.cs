@@ -45,7 +45,7 @@
             // 
             // butProcedure
             // 
-            this.butProcedure.Location = new System.Drawing.Point(169, 45);
+            this.butProcedure.Location = new System.Drawing.Point(158, 45);
             this.butProcedure.Name = "butProcedure";
             this.butProcedure.Size = new System.Drawing.Size(107, 42);
             this.butProcedure.TabIndex = 1;
