@@ -18,6 +18,7 @@ namespace SyncFolder
         private string leftRootPath = null;
         private string rightRootPath = null;
         
+        private NetworkServerInfo serverInfo = null;
 
         public Form1()
         {
@@ -28,7 +29,7 @@ namespace SyncFolder
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            serverInfo = Common.GetServer("server");
         }
 
         private void leftButton_Click(object sender, EventArgs e)
@@ -74,8 +75,7 @@ namespace SyncFolder
 
             using (StreamWriter sw = process.StandardInput)
             {
-                sw.WriteLine(@"net use \\192.168.246.150\C$ amc4715116 /user:administrator");
-                //sw.WriteLine(@"pushd \\192.168.255.201\C$");
+                sw.WriteLine($@"net use {serverInfo.DriveLetter}: {serverInfo.SharePath} {serverInfo.Password} /user:{serverInfo.Username}");
             }
             process.Close();
         }
@@ -98,6 +98,7 @@ namespace SyncFolder
             //fbd.SelectedPath = @"Z:\Interstage\J2EE\var\deployment\ijserver\Cloud11\apps\Cloud11.war\WEB-INF\classes\jp\fujitsu\saas";
 
             fbd.SelectedPath = System.Configuration.ConfigurationManager.AppSettings.Get("DefaultServerProjectPath");
+
             //ユーザーが新しいフォルダを作成できるようにする
             //デフォルトでTrue
             fbd.ShowNewFolderButton = true;
@@ -200,7 +201,33 @@ namespace SyncFolder
 
         }
 
-        #endregion
-             
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            ProcessStartInfo stopInfo = new ProcessStartInfo();
+            stopInfo.FileName = "cmd.exe";
+            stopInfo.RedirectStandardInput = true;
+            stopInfo.UseShellExecute = false;
+            stopInfo.CreateNoWindow = true;
+
+            using (Process process = new Process())
+            {
+                process.StartInfo = stopInfo;
+                process.Start();
+
+                using (StreamWriter sw = process.StandardInput)
+                {
+                    // 指定したドライブレターのネットワーク接続を解除するコマンド
+                    // /yes は強制的に切断するためのオプション
+                    sw.WriteLine($@"net use {serverInfo.DriveLetter}: /delete /yes");
+                }
+                process.WaitForExit();
+            }
+
+        }
     }
+
+
+    #endregion
+
+
 }
