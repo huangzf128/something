@@ -4,6 +4,13 @@
 Debug/
 Release/
 .vs/
+
+# NuGet Packages
+*.nupkg
+**/packages/*
+bin/
+obj/
+
 # ----------------------------
 # 	something else 
 # ----------------------------
