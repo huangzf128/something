@@ -1,4 +1,5 @@
 ﻿using Common;
+using DBSupporter.Common;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -23,11 +24,11 @@ namespace DBSupporter.DB
         {
             // 接続文字列を生成
             string connectString =
-            "Server = " + AppConfigUtil.ReadAppconfig("serverIp")
-            + ";Port = " + AppConfigUtil.ReadAppconfig("port")
-            + ";Database = " + AppConfigUtil.ReadAppconfig("dbName")
-            + ";User ID = " + AppConfigUtil.ReadAppconfig("userId")
-            + ";Password = " + AppConfigUtil.ReadAppconfig("password")
+            "Server = " + ConfigUtil.Current.ServerIp
+            + ";Port = " + ConfigUtil.Current.Port
+            + ";Database = " + ConfigUtil.Current.DbName
+            + ";User ID = " + ConfigUtil.Current.UserId
+            + ";Password = " + ConfigUtil.Current.Password
             + ";Enlist = true";
 
             this.sqlConnection = new NpgsqlConnection(connectString);

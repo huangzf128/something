@@ -38,6 +38,7 @@
             this.chkNumColumnAnno = new System.Windows.Forms.CheckBox();
             this.chkIgnoreCommon = new System.Windows.Forms.CheckBox();
             this.btnCreateMapper = new System.Windows.Forms.Button();
+            this.Open = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lvwColumn
@@ -50,7 +51,7 @@
             this.lvwColumn.HideSelection = false;
             this.lvwColumn.Location = new System.Drawing.Point(219, 46);
             this.lvwColumn.Name = "lvwColumn";
-            this.lvwColumn.Size = new System.Drawing.Size(257, 292);
+            this.lvwColumn.Size = new System.Drawing.Size(257, 380);
             this.lvwColumn.TabIndex = 0;
             this.lvwColumn.UseCompatibleStateImageBehavior = false;
             this.lvwColumn.View = System.Windows.Forms.View.Details;
@@ -80,7 +81,7 @@
             this.lstTable.ItemHeight = 12;
             this.lstTable.Location = new System.Drawing.Point(20, 46);
             this.lstTable.Name = "lstTable";
-            this.lstTable.Size = new System.Drawing.Size(171, 292);
+            this.lstTable.Size = new System.Drawing.Size(171, 376);
             this.lstTable.TabIndex = 2;
             this.lstTable.DoubleClick += new System.EventHandler(this.lstTable_DoubleClick);
             // 
@@ -136,11 +137,22 @@
             this.btnCreateMapper.UseVisualStyleBackColor = true;
             this.btnCreateMapper.Click += new System.EventHandler(this.btnCreateMapper_Click);
             // 
+            // Open
+            // 
+            this.Open.Location = new System.Drawing.Point(700, 387);
+            this.Open.Name = "Open";
+            this.Open.Size = new System.Drawing.Size(54, 39);
+            this.Open.TabIndex = 8;
+            this.Open.Text = "開";
+            this.Open.UseVisualStyleBackColor = true;
+            this.Open.Click += new System.EventHandler(this.Open_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.Open);
             this.Controls.Add(this.btnCreateMapper);
             this.Controls.Add(this.chkIgnoreCommon);
             this.Controls.Add(this.chkNumColumnAnno);
@@ -168,6 +180,7 @@
         private System.Windows.Forms.CheckBox chkNumColumnAnno;
         private System.Windows.Forms.CheckBox chkIgnoreCommon;
         private System.Windows.Forms.Button btnCreateMapper;
+        private System.Windows.Forms.Button Open;
     }
 }
 

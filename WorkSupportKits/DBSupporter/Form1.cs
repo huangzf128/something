@@ -1,25 +1,28 @@
-﻿using DBSupporter.DB;
+﻿using Common;
+using DBSupporter.Common;
+using DBSupporter.DB;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Common;
-using DBSupporter.Common;
 using static DBSupporter.Common.Consts;
-using System.IO;
 
 namespace DBSupporter
 {
+
     public partial class Form1 : Form
     {
+
         private IBaseDB db = DBFactory.GetDBInstance(DBTYPE.postgresql);
 
         public Form1()
@@ -37,6 +40,8 @@ namespace DBSupporter
             }
         }
 
+
+        #region "EVENT"
 
         private void lstTable_DoubleClick(object sender, EventArgs e)
         {
@@ -60,12 +65,35 @@ namespace DBSupporter
             }
         }
 
+
+        /// <summary>
+        /// Entity作成
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnGenerate_Click(object sender, EventArgs e)
         {
+            if (lstTable.SelectedItems.Count == 0) return;
+
             string tableName = lstTable.SelectedItems[0].ToString();
+            string camalTableName = StringUtil.ToPascalCase(tableName);
+            String tableComment = getTableComment(tableName);
+
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"public class {tableName} implements Serializable {{");
+
+            String comment = ConfigUtil.Current.CommentTemplate;
+            comment = comment.Replace("{ID}", "-")
+                            .Replace("{SystemName}", "")
+                            .Replace("{ClassName}", $"{camalTableName}Entity")
+                            .Replace("{Date}", DateTime.Now.ToString("yyyy/MM/dd"));
+
+            sb.AppendLine(comment);
+
+            sb.AppendLine($"@Data");
+            sb.AppendLine($"@EqualsAndHashCode(callSuper = true)");
+            sb.AppendLine($"@Table(value = \"{tableName}\", onInsert = {{ BaseListener.class }}, onUpdate = {{ BaseListener.class }})");
+            sb.AppendLine($"public class {camalTableName}Entity extends BaseEntity implements Serializable {{");
 
             for (int i = 0; i < lvwColumn.Items.Count; i++)
             {
@@ -76,7 +104,7 @@ namespace DBSupporter
                 String isPk = column.SubItems[3].Text;
 
                 // ignore common column
-                if (chkIgnoreCommon.Checked && IsCommonColumn(columnName))
+                if (chkIgnoreCommon.Checked && IsCommonColumn(column.SubItems[0].Text))
                 {
                     continue;
                 }
@@ -98,10 +126,12 @@ namespace DBSupporter
                 if (columnType == PostgreSql.TYPE_STRING)
                 {
                     sb.AppendLine($"private String {columnName};");
-                } else if (columnType == PostgreSql.TYPE_NUMBER)
+                }
+                else if (columnType == PostgreSql.TYPE_NUMBER)
                 {
                     sb.AppendLine($"private BigDecimal {columnName};");
-                } else if (columnType == PostgreSql.TYPE_DATE)
+                }
+                else if (columnType == PostgreSql.TYPE_DATE)
                 {
                     sb.AppendLine($"private Date {columnName};");
                 }
@@ -114,12 +144,69 @@ namespace DBSupporter
 
             sb.Append("}");
 
-            Console.WriteLine(sb.ToString());
-            Clipboard.SetText(sb.ToString());
+            SaveToOutputFolder(camalTableName + "Entity.java", sb.ToString());
         }
 
 
-        #region "entity"
+
+        /// <summary>
+        /// Mapper作成
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnCreateMapper_Click(object sender, EventArgs e)
+        {
+            string tableName = lstTable.SelectedItems[0].ToString();
+            string camalTableName = StringUtil.ToPascalCase(tableName);
+            StringBuilder sb = new StringBuilder();
+
+            String tableComment = getTableComment(tableName);
+
+            sb.AppendLine("/**");
+            sb.AppendLine(" * " + tableComment);
+            sb.AppendLine(" */");
+            sb.AppendLine($"public interface {camalTableName}Mapper extends BaseMapper<{camalTableName}Entity> {{");
+            sb.AppendLine("}");
+
+            Console.WriteLine(sb.ToString());
+            //Clipboard.SetText(sb.ToString());
+
+            SaveToOutputFolder(camalTableName + "Mapper.java", sb.ToString());
+
+
+            sb.Clear();
+            sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            sb.AppendLine("<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">");
+            sb.AppendLine($"<!-- {tableComment}マッパー -->");
+            sb.AppendLine($"<mapper namespace=\"jp.c_d_c.online_shinsei.portal.mapper.common.{camalTableName}Mapper\">");
+
+            sb.AppendLine($"<select id=\"selectList\" resultType=\"jp.c_d_c.online_shinsei.portal.entity.common.{camalTableName}Entity\">");
+            sb.AppendLine(" </select>");
+
+            sb.AppendLine("</mapper>");
+            Console.WriteLine(sb.ToString());
+
+
+            SaveToOutputFolder(camalTableName + "Mapper.xml", sb.ToString());
+        }
+
+        private String getTableComment(String tableName)
+        {
+            String sql = $"select col_description('public.{tableName}'::regclass, 0)";
+            String tableComment = "";
+            using (DbDataReader dr = db.ExecuteQuery(sql))
+            {
+                dr.Read();
+                tableComment = dr.GetString(0);
+            }
+            return tableComment;
+        }
+
+        #endregion
+
+
+        #region "METHOD"
+
         private bool IsCommonColumn(String columnName)
         {
             string[] commonCol = { "upd_pg_id", "upd_user_id", "upd_date", "add_pg_id", "add_user_id", "add_date", "delete_flg" };
@@ -156,48 +243,40 @@ namespace DBSupporter
             }
         }
 
+        /// <summary>
+        /// 将内容保存到运行目录下的 output 文件夹中
+        /// </summary>
+        /// <param name="fileName">文件名（例如：UserMapper.xml）</param>
+        /// <param name="content">要写入的字符串内容</param>
+        private void SaveToOutputFolder(string fileName, string content)
+        {
+            try
+            {
+                string outputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "output");
+
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                string filePath = Path.Combine(outputDirectory, fileName);
+
+                File.WriteAllText(filePath, content, Encoding.UTF8);
+
+                Console.WriteLine($"output to : {filePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"error: {ex.Message}");
+            }
+        }
+
         #endregion
 
-
-
-
-        private void btnCreateMapper_Click(object sender, EventArgs e)
+        private void Open_Click(object sender, EventArgs e)
         {
-            string tableName = lstTable.SelectedItems[0].ToString();
-            string camalTableName = StringUtil.ToPascalCase(tableName);
-            StringBuilder sb = new StringBuilder();
-
-            String sql = $"select col_description('public.{tableName}'::regclass, 0)";
-            String tableComment = "";
-            using (DbDataReader dr = db.ExecuteQuery(sql))
-            {
-                dr.Read();
-                tableComment = dr.GetString(0);
-            }
-
-            sb.AppendLine("/**");
-            sb.AppendLine(" * " + tableComment);
-            sb.AppendLine(" */");
-            sb.AppendLine($"public interface {camalTableName}Mapper extends BaseMapper<{camalTableName}Entity> {{");
-            sb.AppendLine("}");
-
-            Console.WriteLine(sb.ToString());
-            //Clipboard.SetText(sb.ToString());
-
-            File.WriteAllText(@"D:\" + camalTableName + "Mapper.java", sb.ToString());
-
-            sb.Clear();
-            sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            sb.AppendLine("<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">");
-            sb.AppendLine($"<!-- {tableComment}マッパー -->");
-            sb.AppendLine($"<mapper namespace=\"jp.c_d_c.online_shinsei.portal.mapper.common.{camalTableName}Mapper\">");
-
-            sb.AppendLine($"<select id=\"selectList\" resultType=\"jp.c_d_c.online_shinsei.portal.entity.common.{camalTableName}Entity\">");
-            sb.AppendLine(" </select>");
-
-            sb.AppendLine("</mapper>");
-            Console.WriteLine(sb.ToString());
-            File.WriteAllText(@"D:\" + camalTableName + "Mapper.xml", sb.ToString());
+            string outputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "output");
+            Process.Start("explorer.exe", outputDirectory);
         }
     }
 }
