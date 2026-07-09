@@ -18,6 +18,7 @@ output/
 input/
 *.wav
 code/python/hzf-unittest/hzf/
+node_modules/
 
 # ----------------------------
 # 	python 
