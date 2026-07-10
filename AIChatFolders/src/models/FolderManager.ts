@@ -172,43 +172,117 @@ export class FolderManager {
 	 * @param parentId - The target folder ID where the chat will be inserted.
 	 * @param chat - Raw identifier and title extracted from the sidebar adapter.
 	 */
-	static async saveChatToFolder(parentId: string, chat: { id: string; title: string }): Promise<FolderData[]> {
-		const folders = await this.getFolders();
+	// static async saveChatToFolder(parentId: string, chat: { id: string; title: string }): Promise<FolderData[]> {
+	// 	const folders = await this.getFolders();
 
-		// Generate a leaf node with a unique prefixed identifier
-		const chatNode: FolderData = {
-			id: `chat-${chat.id}`,
-			name: chat.title,
-			icon: '💬',
-			color: '#888888', // Neutral layout color for chat items
-			parentId: parentId,
-			children: [], // Leaf nodes cannot hold subcontainers
-			items: [],
-			isChat: true,
-			chatId: chat.id
-		};
+	// 	// Generate a leaf node with a unique prefixed identifier
+	// 	const chatNode: FolderData = {
+	// 		id: `chat-${chat.id}`,
+	// 		name: chat.title,
+	// 		icon: '💬',
+	// 		color: '#888888', // Neutral layout color for chat items
+	// 		parentId: parentId,
+	// 		children: [], // Leaf nodes cannot hold subcontainers
+	// 		items: [],
+	// 		isChat: true,
+	// 		chatId: chat.id
+	// 	};
 
-		const insertChatNode = (list: FolderData[]): boolean => {
-			for (const folder of list) {
-				if (folder.id === parentId) {
-					folder.children = folder.children || [];
+	// 	const insertChatNode = (list: FolderData[]): boolean => {
+	// 		for (const folder of list) {
+	// 			if (folder.id === parentId) {
+	// 				folder.children = folder.children || [];
 					
-					// Avoid duplicating the same chat item within the exact same folder
-					const exists = folder.children.some(child => child.id === chatNode.id);
-					if (!exists) {
-						folder.children.push(chatNode);
-					}
-					return true;
-				}
-				if (folder.children && insertChatNode(folder.children)) {
-					return true;
-				}
-			}
-			return false;
-		};
+	// 				// Avoid duplicating the same chat item within the exact same folder
+	// 				const exists = folder.children.some(child => child.id === chatNode.id);
+	// 				if (!exists) {
+	// 					folder.children.push(chatNode);
+	// 				}
+	// 				return true;
+	// 			}
+	// 			if (folder.children && insertChatNode(folder.children)) {
+	// 				return true;
+	// 			}
+	// 		}
+	// 		return false;
+	// 	};
 
-		insertChatNode(folders);
-		await this.saveFolders(folders);
-		return folders;
-	}
+	// 	insertChatNode(folders);
+	// 	await this.saveFolders(folders);
+	// 	return folders;
+	// }
+
+	/**
+     * Saves a chat record as a leaf node under the specified parent folder.
+     * Prevents duplicate entries within the same folder.
+     */
+    static async saveChatToFolder(parentId: string, chat: { id: string; title: string }): Promise<FolderData[]> {
+        const folders = await this.getFolders();
+
+        const chatNode: FolderData = {
+            id: `chat-${chat.id}`,
+            name: chat.title,
+            icon: '💬',
+            color: '#888888',
+            parentId: parentId,
+            children: [],
+            items: [],
+            isChat: true,
+            chatId: chat.id
+        };
+
+        const insertChatNode = (list: FolderData[]): boolean => {
+            for (const folder of list) {
+                if (folder.id === parentId) {
+                    folder.children = folder.children || [];
+
+                    // Avoid duplicates within the same folder
+                    const exists = folder.children.some(child => child.id === chatNode.id);
+                    if (!exists) {
+                        folder.children.push(chatNode);
+                    }
+                    return true;
+                }
+                if (folder.children && insertChatNode(folder.children)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        insertChatNode(folders);
+        await this.saveFolders(folders);
+        return folders;
+    }
+
+ 	/**
+     * Deletes a node (folder or chat leaf) from the tree.
+     * @param id - The unique identifier of the node to delete.
+     * @param parentId - If provided, only deletes the child node belonging to this parent.
+     *                   Used for deleting chat records from a specific folder.
+     * @returns The updated folder tree.
+     */
+    static async deleteNode(id: string, parentId?: string): Promise<FolderData[]> {
+        const folders = await this.getFolders();
+
+        const removeNode = (list: FolderData[]): FolderData[] => {
+            return list
+                .filter(f => {
+                    // If it's a chat leaf and parentId is provided, match both id and parentId
+                    if (f.isChat && parentId) {
+                        return !(f.id === id && f.parentId === parentId);
+                    }
+                    // Otherwise, delete by id (folders or any matching chat)
+                    return f.id !== id;
+                })
+                .map(f => ({
+                    ...f,
+                    children: removeNode(f.children || [])
+                }));
+        };
+
+        const updated = removeNode(folders);
+        await this.saveFolders(updated);
+        return updated;
+    }
 }

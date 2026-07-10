@@ -64,6 +64,16 @@ export const FolderStyles = `
         padding-left: 10px;
     }
 
+	/* Folder icon as clickable toggle */
+	.aichat-folder-icon.toggle-folder {
+		cursor: pointer;
+		transition: transform 0.2s ease;
+	}
+
+	.aichat-folder-icon.toggle-folder:hover {
+		transform: scale(1.1);
+	}	
+
 	/* ----------------------------------- */
     /* --- Folder Actions (Plus/Trash) --- */
 	/* ----------------------------------- */
@@ -100,24 +110,6 @@ export const FolderStyles = `
 		filter: brightness(1.2);
 		text-shadow: 0 0 8px rgba(233, 173, 8, 0.3);
 	}
-
-    /* --- Chat List Inside Folder --- */
-    .aichat-chat-list {
-        margin-top: 10px; 
-        padding-left: 12px; 
-        border-left: 1px solid #444;
-    }
-    .aichat-chat-item {
-        color: #7193ff; 
-        font-size: 13px; 
-        text-decoration: none;
-        display: block; 
-        padding: 4px 0; 
-        overflow: hidden;
-        text-overflow: ellipsis; 
-        white-space: nowrap;
-    }
-    .aichat-chat-item:hover { text-decoration: underline; }
 
 	/* ---------------------------- */
     /* --- Drag and Drop States --- */
@@ -240,4 +232,85 @@ export const FolderStyles = `
 	.aichat-cascade-item:hover > .aichat-sub-menu {
 		display: block;
 	}
+
+
+	/* ------------------------------ */
+	/* --- Chat Leaf Nodes (Records) -- */
+	/* ------------------------------ */
+	
+	/* ── Chat Leaf Nodes (Records) ── */
+
+	/* Chat leaf card: ultra compact, background blends with parent */
+	.aichat-chat-leaf .aichat-folder-card {
+		background: transparent;
+		border-radius: 0;
+		padding: 1px 2px;
+		min-height: 0;
+		border: none;
+		border-left: 2px solid #333;
+		margin: 0;
+		transition: background 0.1s ease;
+	}
+
+	.aichat-chat-leaf .aichat-folder-card:hover {
+		background: rgba(255, 255, 255, 0.04);
+	}
+
+	/* Chat title: compact, readable */
+	.aichat-chat-leaf .aichat-folder-title {
+		font-size: 13x;
+		font-weight: 400;
+		color: #e9e9e9;          /* Brighter for readability */
+		gap: 0;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	/* Chat anchor link: ellipsis with tooltip on hover */
+	.aichat-chat-anchor {
+		color: #e9e9e9;
+		text-decoration: none;
+		display: block;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		padding: 2px 0;
+	}
+
+	.aichat-chat-anchor:hover {
+		color: #ffffff;
+		text-decoration: none;
+	}
+
+	/* Hide folder icon for chat leaves */
+	.aichat-chat-leaf .aichat-folder-icon {
+		display: none;
+	}
+
+	/* Delete button: hidden by default, visible on row hover */
+	.aichat-chat-leaf .delete-btn {
+		opacity: 0;
+		transition: opacity 0.15s ease;
+	}
+
+	.aichat-chat-leaf:hover .delete-btn {
+		opacity: 0.3;
+	}
+
+	.aichat-chat-leaf .delete-btn:hover {
+		opacity: 1;
+	}
+
+	/* Remove extra spacing between chat items */
+	.aichat-chat-leaf {
+		padding: 0;
+		margin: 0;
+	}
+
+	/* Remove left border for sub-containers inside chat leaves */
+	.aichat-chat-leaf .aichat-sub-container {
+		border-left: none;
+		padding-left: 0;
+	}
+
 `;

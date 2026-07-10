@@ -7,12 +7,15 @@ import { FolderEditor } from './FolderEditor';
 import { ICONS } from './icons';
 import { GlobalStyles } from '../ui/styles/index';
 import type { FolderData } from '../models/Folder';
+import { LeftSidebarAdapter } from '../adapters/LeftSidebar';
 
 export class RightSidebar {
     private panel: HTMLElement | null = null;
     private dock: HTMLElement | null = null;
+	private adapter: LeftSidebarAdapter | null; // ✅ 持有 adapter 引用
 
-    constructor() {
+    constructor(adapter: LeftSidebarAdapter | null) {
+        this.adapter = adapter;
         this.init();
     }
 
@@ -84,6 +87,52 @@ export class RightSidebar {
         this.panel?.addEventListener('click', async (e) => {
             const target = e.target as HTMLElement;
             
+			// ✅ Intercept chat link click
+			const chatLink = target.closest('.aichat-chat-anchor') as HTMLAnchorElement | null;
+			if (chatLink) {
+                const chatId = chatLink.dataset.chatId;
+                if (chatId) {
+                    e.preventDefault();
+                    const url = this.adapter?.resolveChatUrl(chatId);
+                    await this.adapter?.smoothNavigate(chatId, url ?? chatLink.href);
+                }
+                // If not GeminiAdapter, let default behavior (new tab) work
+                return;
+			}
+
+
+			// Inside the click event listener
+			const folderIcon = target.closest('.toggle-folder') as HTMLElement;
+			if (folderIcon) {
+				const node = folderIcon.closest('.aichat-folder-node') as HTMLElement;
+				if (node) {
+
+					const subContainer = node.querySelector('.aichat-sub-container');
+					if (!subContainer || subContainer.children.length === 0) return;
+
+					const isCollapsed = node.classList.toggle('is-collapsed');
+					const id = folderIcon.dataset.id;
+					if (id) {
+						const folders = await FolderManager.getFolders();
+						const updateStatus = (list: FolderData[]): boolean => {
+							for (const f of list) {
+								if (f.id === id) {
+									f.isCollapsed = isCollapsed;
+									return true;
+								}
+								if (f.children && updateStatus(f.children)) return true;
+							}
+							return false;
+						};
+						updateStatus(folders);
+						await FolderManager.saveFolders(folders);
+						this.refresh(); // Refresh to update icon
+					}
+				}
+				return;
+			}
+
+
 			if (target.closest('#aichat-close-btn')) {
 				this.toggle(false);
 				return;
@@ -110,14 +159,40 @@ export class RightSidebar {
                 this.showEditor(addSub.dataset.id!);
             }
 
-            const delBtn = target.closest('.delete-btn') as HTMLElement;
-            if (delBtn) {
-                const id = delBtn.dataset.id!;
-                if (confirm('Delete this folder and all sub-folders?')) {
-                    const updated = await FolderManager.deleteFolder(id);
-                    this.render(updated);
-                }
-            }
+            // const delBtn = target.closest('.delete-btn') as HTMLElement;
+            // if (delBtn) {
+            //     const id = delBtn.dataset.id!;
+            //     if (confirm('Delete this folder and all sub-folders?')) {
+            //         const updated = await FolderManager.deleteFolder(id);
+            //         this.render(updated);
+            //     }
+            // }
+
+			const delBtn = target.closest('.delete-btn') as HTMLElement;
+			if (delBtn) {
+				const id = delBtn.dataset.id!;
+				const node = delBtn.closest('.aichat-folder-node') as HTMLElement;
+				const isChatLeaf = node?.classList.contains('aichat-chat-leaf');
+
+				if (isChatLeaf) {
+					// Delete a chat record from its parent folder
+					const parentNode = node.parentElement?.closest('.aichat-folder-node');
+					const cardEl = parentNode?.querySelector('.aichat-folder-card');
+					const parentId = cardEl instanceof HTMLElement ? cardEl.dataset.id : undefined;
+
+					if (parentId && confirm('Remove this chat from the folder?')) {
+						const updated = await FolderManager.deleteNode(id, parentId);
+						this.render(updated);
+					}
+				} else {
+					// Delete an entire folder (and all its children)
+					if (confirm('Delete this folder and all sub-folders?')) {
+						const updated = await FolderManager.deleteNode(id);
+						this.render(updated);
+					}
+				}
+			}
+
 
 			const toggleBtn = target.closest('.toggle-btn') as HTMLElement;
 			if (toggleBtn) {
@@ -221,7 +296,7 @@ export class RightSidebar {
     //     `}).join('');
     // }
 
-	
+
 	private showEditor(parentId: string | null, existingData?: FolderData): void {
 		let container: HTMLElement | null;
 		let referenceNode: Node | null = null;
@@ -262,6 +337,16 @@ export class RightSidebar {
 		} else {
 			container.insertBefore(form, referenceNode);
 		}
+
+		// ✅ Focus the input field after render
+		const input = form.querySelector('#new-folder-name') as HTMLInputElement | null;
+		if (input) {
+			// Small delay to ensure DOM is fully rendered
+			setTimeout(() => {
+				input.focus();
+				input.select(); // Optional: select all text for quick replacement
+			}, 50);
+		}		
 	}
 
 	/**
@@ -332,6 +417,12 @@ export class RightSidebar {
             const node = card.closest('.aichat-folder-node') as HTMLElement;
             if (!node || node === lastPotentialNode) return;
 
+			// ✅ Prevent dragging onto chat leaves (they are not containers)
+			// if (node.classList.contains('aichat-chat-leaf')) {
+			// 	clearStyles();
+			// 	return;
+			// }
+
 			// Prevent self-dropping
             if (card.dataset.id === draggedId) return;
 
@@ -373,6 +464,11 @@ export class RightSidebar {
 			e.preventDefault();
 			if (!currentTargetNode) return;
 
+			// ✅ Skip if target is a chat leaf
+			if (currentTargetNode.classList.contains('aichat-chat-leaf')) {
+				return;
+			}
+
 			const card = currentTargetNode.querySelector('.aichat-folder-card') as HTMLElement;
 			const rect = card.getBoundingClientRect();
 			const relY = e.clientY - rect.top;
@@ -405,6 +501,7 @@ export class RightSidebar {
 			const targetNode = currentTargetNode;
 			const movingId = draggedId;
 			
+			// ✅ Skip if target is a chat leaf or moving node is a chat leaf
 			if (!targetNode || !movingId) {
 				finalizeDrag();
 				return;
@@ -441,30 +538,28 @@ export class RightSidebar {
 
 
 
-
 	private renderFolderTree(folders: FolderData[], level: number): string {
 		return folders.map(folder => {
 			const hasChildren = folder.children && folder.children.length > 0;
 			const collapseClass = folder.isCollapsed ? 'is-collapsed' : '';
 			
-			// 💡 Render specialized chat records for the current environment
+			// Render chat records
 			if (folder.isChat && folder.chatId) {
-				// 💡 Correctly fetching url through the adapter mapping method we just exposed
-				const resolver = (window as any).resolveCurrentChatUrl;
-				const dynamicUrl = resolver ? resolver(folder.chatId) : '#';
+				let dynamicUrl = '#';
+				if (this.adapter) {
+					dynamicUrl = this.adapter.resolveChatUrl(folder.chatId);
+				}
 				
 				return `
 				<div class="aichat-folder-node aichat-chat-leaf" data-id="${folder.id}">
-					<div class="aichat-folder-card aichat-chat-card" data-id="${folder.id}" draggable="true"
-						style="border-left: 3px solid rgba(255, 255, 255, 0.2); background: #1a1a1a; margin-left: ${level * 4}px;">
-						<div class="aichat-folder-header" style="gap: 4px; display: flex; align-items: center; justify-content: space-between; width: 100%;">
-							<span class="aichat-folder-title" style="flex: 1; min-width: 0; display: block;">
-								<a href="${dynamicUrl}" class="aichat-chat-anchor" title="${folder.name}" target="_blank"
-								style="color: #b3b3b3; text-decoration: none; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; width: 100%;">
+					<div class="aichat-folder-card aichat-chat-card" data-id="${folder.id}" draggable="true">
+						<div class="aichat-folder-header">
+							<span class="aichat-folder-title">
+								<a href="${dynamicUrl}" class="aichat-chat-anchor" title="${folder.name}" target="_blank" data-chat-id="${folder.chatId}">
 									${folder.name}
 								</a>
 							</span>
-							<div class="aichat-actions" style="flex-shrink: 0; display: flex; align-items: center;">
+							<div class="aichat-actions">
 								<span class="delete-btn" data-id="${folder.id}">${ICONS.TRASH}</span>
 							</div>
 						</div>
@@ -473,15 +568,19 @@ export class RightSidebar {
 				`;
 			}
 
-			// Standard Folder HTML Template remains unchanged
+			// Inside the folder rendering section
+			const iconClass = hasChildren ? 'aichat-folder-icon colored toggle-folder' : 'aichat-folder-icon toggle-folder';
+			const glowStyle = hasChildren ? `style="--glow-color: ${folder.color};"` : '';
+			const folderIcon = folder.isCollapsed ? ICONS.FOLDER_CLOSED : ICONS.FOLDER_OPEN;
+
 			return `
 			<div class="aichat-folder-node ${collapseClass}">
 				<div class="aichat-folder-card" data-id="${folder.id}" draggable="true"
 					style="border-left: 4px solid ${folder.color};">
 					<div class="aichat-folder-header">
 						<span class="aichat-folder-title">
-							<span class="aichat-folder-icon colored" style="--glow-color: ${folder.color};">
-								${ICONS.FOLDER}
+							<span class="${iconClass}" data-id="${folder.id}" ${glowStyle}>
+								${folderIcon}
 							</span>
 							<span>${folder.name}</span>
 						</span>
@@ -489,7 +588,7 @@ export class RightSidebar {
 							<span class="edit-btn" data-id="${folder.id}">${ICONS.EDIT}</span>
 							<span class="add-sub-btn" data-id="${folder.id}">${ICONS.PLUS}</span>
 							<span class="delete-btn" data-id="${folder.id}">${ICONS.TRASH}</span>
-							${hasChildren ? `<span class="toggle-btn" data-id="${folder.id}">${ICONS.CHEVRON_DOWN}</span>` : ''}												
+							${hasChildren ? `<span class="toggle-btn" data-id="${folder.id}">${ICONS.CHEVRON_DOWN}</span>` : ''}
 						</div>
 					</div>
 				</div>
@@ -498,8 +597,9 @@ export class RightSidebar {
 				</div>
 			</div>
 			`;
-		}).join('');
-	}	
 
+
+		}).join('');
+	}
 
 }

@@ -28,63 +28,78 @@ export abstract class LeftSidebarAdapter {
 	/**
      * SHARED: Create the cascading menu and manage its lifecycle.
      */
-    protected showLevelMenu(x: number, y: number, folders: any[], level: number = 0): void {
-        if (level === 0) this.removeCascadeMenus();
+	protected showLevelMenu(x: number, y: number, folders: any[], level: number = 0): void {
+		if (level === 0) this.removeCascadeMenus();
 
 		const pureFolders = (folders || []).filter(f => !f.isChat);
 		if (pureFolders.length === 0 && level > 0) return;
 
-        const menu = document.createElement('div');
-        menu.className = `aichat-cascade-menu level-${level}`;
-        menu.style.left = `${x}px`;
-        menu.style.top = `${y}px`;
+		const menu = document.createElement('div');
+		menu.className = `aichat-cascade-menu level-${level}`;
 
-        menu.addEventListener('mouseenter', () => this.clearCloseTimer());
-        menu.addEventListener('mouseleave', () => this.startCloseTimer());
+		menu.addEventListener('mouseenter', () => this.clearCloseTimer());
+		menu.addEventListener('mouseleave', () => this.startCloseTimer());
 
-        folders.forEach(folder => {
-            const item = document.createElement('div');
-            item.className = 'aichat-cascade-item';
-            // const hasChildren = folder.children && folder.children.length > 0;
-            const hasChildren = folder.children && folder.children.some((c: any) => !c.isChat);
+		pureFolders.forEach(folder => {
+			const item = document.createElement('div');
+			item.className = 'aichat-cascade-item';
+			const hasChildren = folder.children && folder.children.some((c: any) => !c.isChat);
 
-            item.innerHTML = `
-                <span>${folder.name}</span>
-                ${hasChildren ? '<span style="font-size: 10px; margin-left:2px;">▶</span>' : ''}
-            `;
+			item.innerHTML = `
+				<span>${folder.name}</span>
+				${hasChildren ? '<span style="font-size: 10px; margin-left:2px;">▶</span>' : ''}
+			`;
 
-            // Click to save
-            item.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const info = this.getChatInfo();
-                // Assumes a global FolderManager or shared method
-                window.dispatchEvent(new CustomEvent('aichat:save-to-folder', { 
-                    detail: { folderId: folder.id, chatInfo: info } 
-                }));
-                this.removeCascadeMenus();
-                document.body.click(); 
-            });
+			item.addEventListener('click', async (e) => {
+				e.stopPropagation();
+				const info = this.getChatInfo();
+				window.dispatchEvent(new CustomEvent('aichat:save-to-folder', {
+					detail: { folderId: folder.id, chatInfo: info }
+				}));
+				this.removeCascadeMenus();
+				document.body.click();
+			});
 
-            if (hasChildren) {
-                item.addEventListener('mouseenter', () => {
-                    this.clearCloseTimer();
-                    const rect = item.getBoundingClientRect();
-                    this.showLevelMenu(rect.right, rect.top, folder.children, level + 1);
-                });
-            } else {
-                item.addEventListener('mouseenter', () => {
-                    this.clearCloseTimer();
-                    this.removeSubMenus(level);
-                });
-            }
-            menu.appendChild(item);
-        });
+			if (hasChildren) {
+				item.addEventListener('mouseenter', () => {
+					this.clearCloseTimer();
+					const rect = item.getBoundingClientRect();
+					// Pass pureFolders to avoid re-filtering
+					const childFolders = folder.children.filter((c: any) => !c.isChat);
+					this.showLevelMenu(rect.right, rect.top, childFolders, level + 1);
+				});
+			} else {
+				item.addEventListener('mouseenter', () => {
+					this.clearCloseTimer();
+					this.removeSubMenus(level);
+				});
+			}
+			menu.appendChild(item);
+		});
 
-        document.body.appendChild(menu);
-    }
+		document.body.appendChild(menu);
 
+		// 💡 Boundary check: adjust if menu overflows viewport
+		const menuHeight = menu.offsetHeight;
+		const viewportHeight = window.innerHeight;
+		const padding = 10;
 
+		let adjustedY = y;
+		if (y + menuHeight > viewportHeight - padding) {
+			adjustedY = Math.max(padding, viewportHeight - menuHeight - padding);
+		}
 
+		// 💡 Also check right boundary (prevent overflow on the right)
+		const menuWidth = menu.offsetWidth;
+		const viewportWidth = window.innerWidth;
+		let adjustedX = x;
+		if (x + menuWidth > viewportWidth - padding) {
+			adjustedX = Math.max(padding, viewportWidth - menuWidth - padding);
+		}
+
+		menu.style.top = `${adjustedY}px`;
+		menu.style.left = `${adjustedX}px`;
+	}
 
     protected startCloseTimer(): void {
         this.clearCloseTimer();
@@ -114,4 +129,14 @@ export abstract class LeftSidebarAdapter {
      * @param chatId - The unique session string.
      */
     abstract resolveChatUrl(chatId: string): string;
+
+	/**
+     * Smooth navigation for SPA platforms.
+     * Default implementation: fallback to full page reload.
+     * Subclasses should override for platform-specific SPA navigation.
+     */
+    async smoothNavigate(chatId: string, fallbackUrl: string): Promise<void> {
+        // Default: full page reload
+        window.location.href = fallbackUrl;
+    }
 }

@@ -45,20 +45,15 @@ export class GeminiAdapter extends LeftSidebarAdapter {
 
 
 	getChatInfo() {
-		// 💡 Gemini's URL structure is normally /app/chatId or /app/chat/chatId
-		const pathParts = window.location.pathname.split('/');
-		const chatId = pathParts[pathParts.length - 1] || '';
-		
 		// 💡 Locate the anchor element using your precise discovered selectors
 		const activeLinkEl = document.querySelector('gem-nav-list-item.always-show-hovered-trailing-content');
 		
-		// 💡 Extract the specific title text block container safely
-		let title = activeLinkEl?.querySelector('.title-text')?.textContent?.trim();
-		
-		// Safety fallback just in case the DOM structure changes temporarily
-		if (!title) {
-			title = document.title;
-		}
+		const anchorEl = activeLinkEl?.querySelector('a');
+		const chatId = anchorEl?.getAttribute('href')?.split('/').pop() || 
+                   window.location.pathname.split('/').pop() || '';
+
+		const title = activeLinkEl?.querySelector('.title-text')?.textContent?.trim() || 
+                  document.title;
 		
 		return { id: chatId, title: title, url: window.location.href };
 	}
@@ -68,5 +63,35 @@ export class GeminiAdapter extends LeftSidebarAdapter {
      */
     resolveChatUrl(chatId: string): string {
         return `https://gemini.google.com/app/${chatId}`;
-    }	
+    }
+
+
+	/**
+	 * Smooth navigation for Gemini SPA
+	 */
+	async smoothNavigate(chatId: string, fallbackUrl: string): Promise<void> {
+		const SELECTOR = `div.chat-history a[href*="${chatId}"]`;
+		const container = document.querySelector('infinite-scroller');
+		
+		const tryClick = (): boolean => {
+			const nativeLink = document.querySelector(SELECTOR) as HTMLAnchorElement | null;
+			if (nativeLink) {
+				nativeLink.click();
+				return true;
+			}
+			return false;
+		};
+
+		if (tryClick()) return;
+
+		if (container) {
+			for (let i = 0; i < 10; i++) {
+				container.scrollTop = container.scrollHeight;
+				await new Promise(r => setTimeout(r, 450));
+				if (tryClick()) return;
+			}
+		}
+
+		window.location.href = fallbackUrl;
+	}	
 }

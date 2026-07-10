@@ -6,8 +6,11 @@ import type { LeftSidebarAdapter } from './adapters/LeftSidebar';
 
 // Create a main entry function
 async function initializeApp() {
+
+    const adapter = getAdapter();
+
     // 1. Initialize UI
-    const sidebar = new RightSidebar();
+    const sidebar = new RightSidebar(adapter); 
 
     // 2. Load and render data
     // Now 'await' is inside an async function, which is allowed
@@ -15,12 +18,9 @@ async function initializeApp() {
     sidebar.render(folders);
 
     // 3. Initialize Adapter (e.g., Gemini)
-    const adapter = getAdapter();
 	if (adapter) {
 		adapter.injectAddButtons();
 		adapter.observeChanges();
-
-		(window as any).resolveCurrentChatUrl = (chatId: string) => adapter.resolveChatUrl(chatId);
 	}
 
     console.log('AIChatFolders: App initialized.');
