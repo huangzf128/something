@@ -7,7 +7,7 @@ export const FolderStyles = `
 	/* ------------------------------ */
     .aichat-folder-card {
         background: #212121;
-        border-radius: 12px;
+        border-radius: 8px;
         padding: 6px 12px;
         margin-bottom: 0;
         border: 1px solid #333;
@@ -46,10 +46,17 @@ export const FolderStyles = `
     }
 
     .aichat-folder-icon.colored {
-        filter: drop-shadow(0 0 3px var(--glow-color)) 
-                drop-shadow(0 0 8px var(--glow-color));
+        filter: drop-shadow(0 0 2px var(--glow-color)) 
+                drop-shadow(0 0 6px var(--glow-color));
         color: #bebebe; 
     }
+
+	/* ✅ Open state: remove glow, brighten color */
+	.aichat-folder-node:not(.is-collapsed) > .aichat-folder-card .aichat-folder-icon.colored {
+		filter: none;
+		color: var(--glow-color);
+	}
+
 
 	.aichat-folder-node {
 		position: relative;
@@ -59,7 +66,7 @@ export const FolderStyles = `
 	
 	/* Vertical dotted line connecting subfolders for visual guidance */
     .aichat-sub-container {
-        border-left: 1px dashed #444;
+        border-left: 1px dashed var(--glow-color);
         margin-left: 8px;
         padding-left: 10px;
     }
@@ -83,15 +90,19 @@ export const FolderStyles = `
     }
     .aichat-actions span {
         cursor: pointer;
-        opacity: 0.7;
-        transition: all 0.2s;
+        opacity: 0;
+        transition: opacity 0.15s ease;
         display: flex;
         align-items: center;
     }
-		
+	
+	.aichat-folder-card:hover .aichat-actions span {
+		opacity: 0.5;
+	}
+
 	/* Hover effect: Scale up and become fully opaque */
 	.aichat-actions span:hover {
-		opacity: 1;
+		opacity: 1 !important;
 		transform: scale(1.1); /* Slightly enlarge for better tactility */
 	}
 
@@ -247,7 +258,7 @@ export const FolderStyles = `
 		padding: 1px 2px;
 		min-height: 0;
 		border: none;
-		border-left: 2px solid #333;
+		// border-left: 2px solid #333;
 		margin: 0;
 		transition: background 0.1s ease;
 	}

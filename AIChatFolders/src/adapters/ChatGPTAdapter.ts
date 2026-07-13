@@ -5,8 +5,7 @@
 import { LeftSidebarAdapter } from './LeftSidebar';
 
 export class ChatGPTAdapter extends LeftSidebarAdapter {
-    platformName = 'ChatGPT';
-    
+    platformId = 'ChatGPT';
     // ChatGPT usually uses role="menu" for the popover container
     itemSelector = '[role="menu"]';
 

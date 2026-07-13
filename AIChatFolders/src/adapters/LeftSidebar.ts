@@ -1,32 +1,31 @@
 /**
- * Interface for site-specific sidebar adaptations.
- * Defines the contract for interacting with different AI platform UIs.
+ * @file LeftSidebarAdapter.ts
+ * @description Base abstract class defining the contract for site-specific AI platform sidebar adaptations.
+ * Provides shared capabilities including DOM mutation monitoring and multi-level cascade menu management.
+ */
+
+/**
+ * Abstract adapter that bridges the application core with specific AI platform UIs (e.g., Gemini, ChatGPT).
+ * Subclasses must implement site-specific selectors, ingestion hooks, and routing handlers.
  */
 export abstract class LeftSidebarAdapter {
-    abstract platformName: string;
-    abstract itemSelector: string;
-    protected closeTimer: any = null;
+    abstract platformId: string;	// Unique identifier string for the target AI platform (e.g., 'gemini', 'chatgpt')
+    abstract itemSelector: string;	// DOM selector string used to target individual chat list items in the native sidebar
+    protected closeTimer: any = null;	// Reference identifier for the delayed menu closure timer mechanism
 
     /**
-     * Injects the "Add to Folder" button or menu item into the platform's UI.
+     * Injects the custom "Add to Folder" action triggers into the platform's native UI elements.
+     * @abstract
      */
     abstract injectAddButtons(): void;
 
 	/**
-     * Entry point: Start observing the platform's DOM changes.
-     */
-    observeChanges(): void {
-        const observer = new MutationObserver(() => this.injectAddButtons());
-        observer.observe(document.body, { childList: true, subtree: true });
-    }
-
-    /**
-     * Extracts chat metadata from a given DOM element.
-     */
-    abstract getChatInfo(): { id: string; title: string; url: string };
-
-	/**
-     * SHARED: Create the cascading menu and manage its lifecycle.
+     * Creates, positions, and manages the operational lifecycle of a multi-level cascading folder menu.
+     * @protected
+     * @param {number} x - Target horizontal page coordinate for anchor positioning.
+     * @param {number} y - Target vertical page coordinate for anchor positioning.
+     * @param {any[]} folders - Layer segments of the folder tree structure to render.
+     * @param {number} [level=0] - Current absolute depth of the nested cascade layer.
      */
 	protected showLevelMenu(x: number, y: number, folders: any[], level: number = 0): void {
 		if (level === 0) this.removeCascadeMenus();
@@ -64,7 +63,7 @@ export abstract class LeftSidebarAdapter {
 				item.addEventListener('mouseenter', () => {
 					this.clearCloseTimer();
 					const rect = item.getBoundingClientRect();
-					// Pass pureFolders to avoid re-filtering
+					// Pass pre-filtered child slices to prevent redundant calculation cycles
 					const childFolders = folder.children.filter((c: any) => !c.isChat);
 					this.showLevelMenu(rect.right, rect.top, childFolders, level + 1);
 				});
@@ -79,7 +78,7 @@ export abstract class LeftSidebarAdapter {
 
 		document.body.appendChild(menu);
 
-		// 💡 Boundary check: adjust if menu overflows viewport
+		// UI Boundary calculation safeguards: Adjust constraints if elements exceed current viewport boundaries
 		const menuHeight = menu.offsetHeight;
 		const viewportHeight = window.innerHeight;
 		const padding = 10;
@@ -101,11 +100,19 @@ export abstract class LeftSidebarAdapter {
 		menu.style.left = `${adjustedX}px`;
 	}
 
+	/**
+     * Starts the delayed grace-period timer before tearing down active popup menu nodes.
+     * @protected
+     */
     protected startCloseTimer(): void {
         this.clearCloseTimer();
         this.closeTimer = setTimeout(() => this.removeCascadeMenus(), 300);
     }
 
+	/**
+     * Annuls the pending destruction sequence timer to maintain UI menu tree presentation.
+     * @protected
+     */
     protected clearCloseTimer(): void {
         if (this.closeTimer) {
             clearTimeout(this.closeTimer);
@@ -113,10 +120,19 @@ export abstract class LeftSidebarAdapter {
         }
     }
 
+	/**
+     * Purges all custom cascading context menu components from the active global DOM document.
+     * @protected
+     */
     protected removeCascadeMenus(): void {
         document.querySelectorAll('.aichat-cascade-menu').forEach(el => el.remove());
     }
 
+	/**
+     * Prunes subset nested menu clusters stretching beyond a designated hierarchical matrix tier.
+     * @protected
+     * @param {number} currentLevel - The absolute index depth threshold boundary.
+     */
     protected removeSubMenus(currentLevel: number): void {
         document.querySelectorAll('.aichat-cascade-menu').forEach(menu => {
             const level = parseInt(menu.className.match(/level-(\d+)/)?.[1] || "0");
@@ -125,15 +141,36 @@ export abstract class LeftSidebarAdapter {
     }
 
 	/**
-     * 💡 NEW: Compiles a standard raw identifier into a full, navigable platform hyperlink.
-     * @param chatId - The unique session string.
+     * Begins monitoring the platform's DOM tree for dynamic mutations to ensure
+     * custom action elements persist during client-side state transitions.
+     */
+    observeChanges(): void {
+        const observer = new MutationObserver(() => this.injectAddButtons());
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    /**
+     * Scrapes and extracts structural chat telemetry from a targeted native DOM element.
+     * @abstract
+     * @returns {{ id: string; title: string; url: string }} Extracted safe metadata representing the active chat.
+     */
+    abstract getChatInfo(): { id: string; title: string; url: string };
+
+	/**
+     * Compiles a standard raw conversation identifier into a full, navigable platform hyperlink.
+     * @abstract
+     * @param {string} chatId - The unique native session identifier string.
+     * @returns {string} Fully structured routing address URL bound to the target stream.
      */
     abstract resolveChatUrl(chatId: string): string;
 
 	/**
-     * Smooth navigation for SPA platforms.
-     * Default implementation: fallback to full page reload.
-     * Subclasses should override for platform-specific SPA navigation.
+     * Orchestrates decoupled soft client navigation for Single Page Application (SPA) layout engines.
+     * Falls back gracefully to explicit full location reloads if specialized handling isn't provided.
+     * @virtual
+     * @param {string} chatId - Target transaction thread metadata key.
+     * @param {string} fallbackUrl - The complete destination URL structure backup.
+     * @returns {Promise<void>}
      */
     async smoothNavigate(chatId: string, fallbackUrl: string): Promise<void> {
         // Default: full page reload

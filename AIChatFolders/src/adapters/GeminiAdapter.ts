@@ -7,7 +7,7 @@ import { FolderManager } from '../models/FolderManager';
 import type { FolderData } from '../models/Folder';
 
 export class GeminiAdapter extends LeftSidebarAdapter {
-    platformName = 'Gemini';
+    platformId = 'Gemini';
     // Gemini's menu content container selector
     itemSelector = 'div.mat-mdc-menu-content';
 
