@@ -1,17 +1,57 @@
 /**
- * GeminiAdapter.ts
- * Implementation for Google Gemini with native menu injection.
+ * @file GeminiAdapter.ts
+ * @description Implementation for Google Gemini with native menu injection.
  */
 import { LeftSidebarAdapter } from './LeftSidebar';
 import { FolderManager } from '../models/FolderManager';
-import type { FolderData } from '../models/Folder';
 
 export class GeminiAdapter extends LeftSidebarAdapter {
     platformId = 'Gemini';
     // Gemini's menu content container selector
     itemSelector = 'div.mat-mdc-menu-content';
 
-	injectAddButtons(): void {
+	constructor() {
+        super();
+        this.initClickListener();
+    }
+
+    initClickListener(): void {
+        document.body.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            
+			// get chat info
+			const historyContainer = target.closest('#sidenav-section-content-chats');	// chat container
+            if (historyContainer) {
+				// Search upwards to find the menu item / container, then locate the associated chat link containing /c/
+				const chatRow = target.closest('gem-nav-list-item');
+				const linkEl = chatRow?.querySelector('a[href*="/app/"]') as HTMLAnchorElement;
+				
+				if (linkEl) {
+					const href = linkEl.getAttribute('href') || '';
+					const pathParts = href.split('/');
+					const chatId = pathParts[pathParts.length - 1];
+					const title = linkEl.textContent?.trim() || document.title;
+
+					if (chatId) {
+						this.currentTargetChat = { id: chatId, title };
+					}
+				}
+			} else if (!target.closest('.aichat-cascade-menu, .aichat-folder-menu-item')) {
+				
+                // Clear cache ONLY IF the click is outside the sidebar history, custom menu, AND native menu
+                this.currentTargetChat = null;
+			}
+
+			// Defer execution slightly to allow ChatGPT to render the context menu DOM into the document
+            setTimeout(() => {
+                this.createMenuItem();
+            }, 50);
+
+        }, true); // Use capture phase to ensure the ID is grabbed before the menu opens
+    }	
+
+	private createMenuItem(): void {
+	
         const menuContainer = document.querySelector(this.itemSelector);
         if (!menuContainer || menuContainer.querySelector('.aichat-folder-menu-item')) return;
 
@@ -32,19 +72,19 @@ export class GeminiAdapter extends LeftSidebarAdapter {
             this.showLevelMenu(rect.right + 2, rect.top, folders);
         });
 
-        button.addEventListener('mouseleave', () => this.startCloseTimer());
-    }
-
-	// getChatInfo() {
-    //     const chatId = window.location.pathname.split('/').pop() || '';
-    //     const activeChatEl = document.querySelector('.is-active mdc-list-item--activated');
-    //     const title = activeChatEl?.querySelector('.title-text')?.textContent || document.title;
-
-    //     return { id: chatId, title: title.trim(), url: window.location.href };
-    // }
-
+        button.addEventListener('mouseleave', () => this.startCloseTimer());		
+	}
 
 	getChatInfo() {
+
+		if (this.currentTargetChat) {
+            return {
+                id: this.currentTargetChat.id,
+                title: this.currentTargetChat.title,
+                url: this.resolveChatUrl(this.currentTargetChat.id)
+            };
+        }
+
 		// 💡 Locate the anchor element using your precise discovered selectors
 		const activeLinkEl = document.querySelector('gem-nav-list-item.always-show-hovered-trailing-content');
 		
@@ -64,7 +104,6 @@ export class GeminiAdapter extends LeftSidebarAdapter {
     resolveChatUrl(chatId: string): string {
         return `https://gemini.google.com/app/${chatId}`;
     }
-
 
 	/**
 	 * Smooth navigation for Gemini SPA

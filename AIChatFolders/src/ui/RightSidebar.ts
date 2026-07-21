@@ -206,30 +206,35 @@ export class RightSidebar {
 				}
 			}
 
-            const addSub = target.closest('.add-sub-btn') as HTMLElement;
-            if (addSub) {
-                this.showEditor(addSub.dataset.id!);
-            }
+			const addSub = target.closest('.add-sub-btn') as HTMLElement;
+			if (addSub) {
+				const folderId = addSub.dataset.id!;
+				// The folder may be collapsed, which hides its children container via CSS.
+				// Expand it first so the inline editor we're about to inject is actually visible.
+				await FolderManager.expandFolder(folderId);
+				await this.refresh();
+				this.showEditor(folderId);
+			}
 
 			const delBtn = target.closest('.delete-btn') as HTMLElement;
 			if (delBtn) {
 				const id = delBtn.dataset.id!;
 				const node = delBtn.closest('.aichat-folder-node') as HTMLElement;
 				const isChatLeaf = node?.classList.contains('aichat-chat-leaf');
-
+				// Pull the display name straight from the rendered card so the confirm
+				// dialog can reference the actual item being deleted.
+				const titleEl = node?.querySelector('.aichat-folder-title');
+				const nodeName = (titleEl?.textContent || '').trim();
 				if (isChatLeaf) {
-					// Extract safe tracking contexts linked to chat records stored inside subfolders
 					const parentNode = node.parentElement?.closest('.aichat-folder-node');
 					const cardEl = parentNode?.querySelector('.aichat-folder-card');
 					const parentId = cardEl instanceof HTMLElement ? cardEl.dataset.id : undefined;
-
-					if (parentId && confirm('Remove this chat from the folder?')) {
+					if (parentId && confirm(`Remove "${nodeName}" from the folder?`)) {
 						const updated = await FolderManager.deleteNode(id, parentId);
 						this.render(updated);
 					}
 				} else {
-					// Delete an entire structured folder subsystem branch recursively
-					if (confirm('Delete this folder and all sub-folders?')) {
+					if (confirm(`Delete folder "${nodeName}" and all its sub-folders?`)) {
 						const updated = await FolderManager.deleteNode(id);
 						this.render(updated);
 					}
@@ -237,17 +242,25 @@ export class RightSidebar {
 			}
         });
 
-		// Global configuration events captured across decoupled browser storage updates
-		window.addEventListener('aichat:save-to-folder', async (e: Event) => {
-			const customEvent = e as CustomEvent<{ folderId: string; chatInfo: { id: string; title: string } }>;
-			const { folderId, chatInfo } = customEvent.detail;
+		// Add a safeguard to prevent duplicate event listener registration 
+        // in case the content script is re-injected by the browser.
+		if (!(window as any).__aichat_listener_attached) {
+			window.addEventListener('aichat:save-to-folder', async (e: Event) => {
+				const customEvent = e as CustomEvent<{ folderId: string; chatInfo: { id: string; title: string } }>;
+				const { folderId, chatInfo } = customEvent.detail;
 
-			if (!folderId || !chatInfo) return;
+				if (!folderId || !chatInfo) return;
 
-			// Save directly under current single platform logic
-			await FolderManager.saveChatToFolder(folderId, chatInfo);
-			await this.refresh();
-		});	
+				// Save directly under current single platform logic
+				await FolderManager.saveChatToFolder(folderId, chatInfo);
+				this.toggle(true);
+				await this.refresh();
+				this.flashNode(chatInfo.id); 
+			});
+
+			// Mark the listener as attached
+            (window as any).__aichat_listener_attached = true;
+		}
     }
 
 	/**
@@ -355,7 +368,7 @@ export class RightSidebar {
 		let currentTargetNode: HTMLElement | null = null;
 		let dragEnterTimer: number | null = null;
 
-		// Clears temporary visual tracking highlight markers across global document selectors
+		// Cleans up all temporary CSS classes used for highlighting drop zones
 		const clearStyles = () => {
 			this.panel?.querySelectorAll('.has-drop-before').forEach(n => 
 				n.classList.remove('has-drop-before'));
@@ -438,17 +451,22 @@ export class RightSidebar {
 			e.preventDefault();
 			if (!currentTargetNode) return;
 
-			// Chat records represent pure terminal leaf nodes and cannot act as cluster containers
+			// Terminal leaf nodes (chats) cannot act as containers for other folders/chats
 			if (currentTargetNode.classList.contains('aichat-chat-leaf')) {
 				return;
 			}
 
 			const card = currentTargetNode.querySelector('.aichat-folder-card') as HTMLElement;
 			const rect = card.getBoundingClientRect();
+
+			// Calculate the Y coordinate of the mouse relative to the card's top edge
 			const relY = e.clientY - rect.top;
 			const height = rect.height;
 
-			// Calculate positional thresholds determining whether item moves BEFORE or INSIDE target clusters
+			// Determine drop placement based on cursor vertical position:
+			// Top 20%    -> BEFORE target
+            // Middle 60% -> INSIDE target
+            // Bottom 20% -> AFTER target			
 			const isInside = relY > height * 0.2 && relY < height * 0.8;
 			const isAfter = relY >= height * 0.8;
 			const isLast = !currentTargetNode.nextElementSibling;
@@ -520,6 +538,26 @@ export class RightSidebar {
 		});
 	}
 
+	/**
+	 * Briefly flashes the target card to draw the user's eye to something
+	 * that was just added (e.g. a newly saved chat).
+	 * @private
+	 * @param {string} id - data-id of the target folder-card element.
+	 */
+	private flashNode(id: string): void {
+		const card = this.panel?.querySelector(`.aichat-folder-card[data-id="${id}"]`) as HTMLElement | null;
+		if (!card) return;
+		// In case the panel content overflows, make sure the new item is actually in view.
+		card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+		// Force a reflow so re-adding the class restarts the animation cleanly,
+		// even if this same id was flashed a moment ago.
+		card.classList.remove('aichat-just-added');
+		void card.offsetWidth;
+		card.classList.add('aichat-just-added');
+		card.addEventListener('animationend', () => {
+			card.classList.remove('aichat-just-added');
+		}, { once: true });
+	}
 
 	/**
      * Recursively parses tree node parameters down into validated HTML templates.
@@ -532,13 +570,15 @@ export class RightSidebar {
 	private renderFolderTree(folders: FolderData[], level: number): string {
 		return folders.map(folder => {
 			const hasChildren = folder.children && folder.children.length > 0;
-			const collapseClass = folder.isCollapsed ? 'is-collapsed' : '';
-			
+			const isCollapsed = !!folder.isCollapsed;
+			const collapseClass = isCollapsed ? 'is-collapsed' : '';
+
 			// Render branch leaf instances representing mapped native chat history items
-			if (folder.isChat && folder.chatId) {
+			if (folder.isChat) {
+				const targetChatId = folder.id;
 				let dynamicUrl = '#';
 				if (this.adapter) {
-					dynamicUrl = this.adapter.resolveChatUrl(folder.chatId);
+					dynamicUrl = this.adapter.resolveChatUrl(targetChatId);
 				}
 				
 				return `
@@ -546,7 +586,7 @@ export class RightSidebar {
 					<div class="aichat-folder-card aichat-chat-card" data-id="${folder.id}" draggable="true">
 						<div class="aichat-folder-header">
 							<span class="aichat-folder-title">
-								<a href="${dynamicUrl}" class="aichat-chat-anchor" title="${folder.name}" target="_blank" data-chat-id="${folder.chatId}">
+								<a href="${dynamicUrl}" class="aichat-chat-anchor" title="${folder.name}" target="_blank" data-chat-id="${targetChatId}">
 									${folder.name}
 								</a>
 							</span>
@@ -562,7 +602,7 @@ export class RightSidebar {
 			// Inside the folder rendering section
 			const iconClass = hasChildren ? 'aichat-folder-icon colored toggle-folder' : 'aichat-folder-icon toggle-folder';
 			const glowStyle = hasChildren ? `style="--glow-color: ${folder.color};"` : '';
-			const folderIcon = folder.isCollapsed ? ICONS.FOLDER_CLOSED : ICONS.FOLDER_OPEN;
+			const folderIcon = (isCollapsed || !hasChildren) ? ICONS.FOLDER_CLOSED : ICONS.FOLDER_OPEN;
 
 			return `
 			<div class="aichat-folder-node ${collapseClass}" style="--glow-color: ${folder.color};">

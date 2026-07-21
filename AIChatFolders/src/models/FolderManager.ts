@@ -6,6 +6,9 @@
 import type { FolderData, ChatItem } from './Folder';
 import { LeftSidebarAdapter } from '../adapters/LeftSidebar';
 
+const MAX_FOLDER_NAME_LENGTH = 40;
+const MAX_CHAT_NAME_LENGTH = 80;
+
 /**
  * Manager class responsible for handling storage, retrieval, modification,
  * and advanced structural reordering (drag-and-drop) of the folder tree.
@@ -72,15 +75,18 @@ export class FolderManager {
      * Creates and inserts a new folder into the tree.
      * @param {string} name - Display name of the folder.
      * @param {string} color - Hex code or style class representing the folder color.
-     * @param {string} icon - Emoji or visual asset indicator.
      * @param {string | null} [parentId=null] - ID of the parent folder, or null if it's a root-level folder.
      * @returns {Promise<FolderData[]>} The newly updated folder tree.
      */
-	static async addFolder(name: string, color: string, icon: string, parentId: string | null = null): Promise<FolderData[]> {
+	static async addFolder(name: string, color: string, parentId: string | null = null): Promise<FolderData[]> {
         const allFolders = await this.getFolders();
+
+    	const sanitizedName = name.trim().slice(0, MAX_FOLDER_NAME_LENGTH);
+
         const newFolder: FolderData = {
             id: Date.now().toString(),
-            name, color, icon, parentId,
+            name: sanitizedName,
+			color, parentId,
             children: [],
             items: []
         };
@@ -105,11 +111,12 @@ export class FolderManager {
      */
 	public static async updateFolder(id: string, data: { name: string, color: string }): Promise<void> {
 		let folders = await this.getFolders();
-		
+		const sanitizedName = data.name.trim().slice(0, MAX_FOLDER_NAME_LENGTH);
+
 		const updateInTree = (list: FolderData[]) => {
 			for (const f of list) {
 				if (f.id === id) {
-					f.name = data.name;
+					f.name = sanitizedName;
 					f.color = data.color;
 					return true;
 				}
@@ -245,16 +252,19 @@ export class FolderManager {
     static async saveChatToFolder(parentId: string, chat: { id: string; title: string }): Promise<FolderData[]> {
         const folders = await this.getFolders();
 
+		const sanitizedTitle = (chat.title || 'Untitled Chat')
+								.replace(/\s+/g, ' ')
+								.trim()
+								.slice(0, MAX_CHAT_NAME_LENGTH);
+
         const chatNode: FolderData = {
-            id: `chat-${chat.id}`,
-            name: chat.title,
-            icon: '💬',
+            id: `${chat.id}`,
+            name: sanitizedTitle,
             color: '#888888',
             parentId: parentId,
             children: [],
             items: [],
             isChat: true,
-            chatId: chat.id
         };
 
         const insertChatNode = (list: FolderData[]): boolean => {
@@ -277,9 +287,48 @@ export class FolderManager {
         };
 
         insertChatNode(folders);
+		this.expandAncestors(folders, parentId); 
         await this.saveFolders(folders);
         return folders;
     }
+
+	/**
+	 * Expands (isCollapsed = false) the target folder and every ancestor above it,
+	 * since a collapsed ancestor hides its whole subtree via CSS regardless of the
+	 * child's own collapse state.
+	 * @private
+	 */
+	private static expandAncestors(folders: FolderData[], folderId: string): void {
+		// Flatten the tree into a lookup map so we can walk up the parentId chain.
+		const map = new Map<string, FolderData>();
+		const buildMap = (list: FolderData[]) => {
+			for (const f of list) {
+				map.set(f.id, f);
+				if (f.children) buildMap(f.children);
+			}
+		};
+		buildMap(folders);
+		let current = map.get(folderId);
+		while (current) {
+			current.isCollapsed = false;
+			current = current.parentId ? map.get(current.parentId) : undefined;
+		}
+	}
+
+	/**
+	 * Expands the given folder (and all its ancestors) and persists the change.
+	 * Call this before showing UI that gets injected into a folder's children
+	 * container, since that container stays display:none while the folder itself
+	 * (or any ancestor) is collapsed.
+	 * @param {string} folderId - Target folder to expand.
+	 * @returns {Promise<FolderData[]>} The updated folder tree.
+	 */
+	static async expandFolder(folderId: string): Promise<FolderData[]> {
+		const folders = await this.getFolders();
+		this.expandAncestors(folders, folderId);
+		await this.saveFolders(folders);
+		return folders;
+	}
 
  	/**
      * Deletes a versatile single node (can be an abstract subfolder or an operational chat leaf) from the tree.

@@ -22,7 +22,7 @@ export class FolderEditor {
 
         form.innerHTML = `
 			<input type="text" class="aichat-input" id="new-folder-name" autocomplete="off"
-						placeholder="Folder Name..." value="${initialName}" autofocus>
+						placeholder="Folder Name..." value="${initialName}" maxlength="40" autofocus>
             <div class="aichat-color-picker">
 				${PRESET_COLORS.map((c) => {
 					const isActive = c === selectedColor ? 'active' : '';
@@ -49,7 +49,7 @@ export class FolderEditor {
                 if (existingData) {
 					await FolderManager.updateFolder(existingData.id, { name, color: selectedColor });
 				} else {
-					await FolderManager.addFolder(name, selectedColor, '📁', parentId);
+					await FolderManager.addFolder(name, selectedColor, parentId);
 				}
                 onSave();
                 form.remove();

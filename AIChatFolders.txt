@@ -1,0 +1,2195 @@
+=== AI CONTEXT PACKAGE ===
+The following data contains the project structure and/or compressed source code.
+<project_map>
+AIChatFolders/
+├── manifest.json
+├── package.json
+├── src
+│   ├── adapters
+│   │   ├── ChatGPTAdapter.ts
+│   │   ├── ClaudeAdapter.ts
+│   │   ├── DeepSeekAdapter.ts
+│   │   ├── GeminiAdapter.ts
+│   │   └── LeftSidebar.ts
+│   ├── background.ts
+│   ├── content.ts
+│   ├── models
+│   │   ├── Folder.ts
+│   │   └── FolderManager.ts
+│   ├── sidebar.ts
+│   ├── types.ts
+│   └── ui
+│       ├── FolderEditor.ts
+│       ├── RightSidebar.ts
+│       ├── icons.ts
+│       └── styles
+│           ├── components.ts
+│           ├── folder.ts
+│           ├── index.ts
+│           └── layout.ts
+├── tsconfig.json
+└── vite.config.ts
+</project_map>
+
+<source_codes>
+  <file path="manifest.json">
+{
+	"manifest_version": 3,
+	"name": "AIChatFolders",
+	"version": "1.0",
+	"description": "Manage your Gemini/ChatGPT chats with folders.",
+	"permissions": ["storage"],
+	"content_scripts": [
+	{
+		"matches": ["https://gemini.google.com/*", "https://chatgpt.com/*", "https://chat.deepseek.com/*", "https://claude.ai/*"],
+		"js": ["dist/content.js"]
+	}
+	]
+}
+  </file>
+  <file path="package.json">
+{
+  "name": "aichatfolders",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "check": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/chrome": "^0.1.40",
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8"
+  }
+}
+  </file>
+  <file path="src\adapters\ChatGPTAdapter.ts">
+/**
+* @file ChatGPTAdapter.ts
+* @description Implementation for OpenAI ChatGPT. Handles native menu injection
+* and custom SPA (Single Page Application) navigation logic.
+*/
+import { LeftSidebarAdapter } from './LeftSidebar';
+import { ICONS } from '../ui/icons';
+import { FolderManager } from '../models/FolderManager';
+export class ChatGPTAdapter extends LeftSidebarAdapter {
+platformId = 'ChatGPT';
+// Target selector for ChatGPT's native popover action menu
+itemSelector = '[role="menu"] > div[role="group"]:last-child';
+constructor() {
+super();
+this.initClickListener();
+}
+initClickListener(): void {
+document.body.addEventListener('click', (e) => {
+const target = e.target as HTMLElement;
+// get chat info
+const historyContainer = target.closest('#history');	// chat container
+if (historyContainer) {
+// Traverse up the DOM tree to locate the list item, then find the anchor tag containing the chat ID
+const chatRow = target.closest('li');
+const linkEl = chatRow?.querySelector('a[href*="/c/"]') as HTMLAnchorElement;
+if (linkEl) {
+const href = linkEl.getAttribute('href') || '';
+const pathParts = href.split('/');
+const chatId = pathParts[pathParts.length - 1];
+const title = linkEl.textContent?.trim() || document.title;
+if (chatId) {
+this.currentTargetChat = { id: chatId, title };
+}
+}
+} else if (!target.closest('.aichat-cascade-menu, .aichat-folder-menu-item')) {
+// Invalidate the cache if the user clicks completely outside the sidebar or menus
+this.currentTargetChat = null;
+}
+// Defers execution slightly to allow the SPA to render the context menu DOM elements.
+setTimeout(() => {
+this.createMenuItem();
+}, 50);
+}, true); // Use capture phase to ensure data is grabbed before React swallows the event
+}
+private createMenuItem(): void {
+const menuContainer = document.querySelector(this.itemSelector);
+// Skip if menu not found or button already exists
+if (!menuContainer || menuContainer.querySelector('.aichat-folder-menu-item')) return;
+// Find an existing menu item to clone its classes for consistent styling
+const originalItem = menuContainer.querySelector('[role="menuitem"]');
+if (!originalItem) return;
+const button = document.createElement('div');
+// Copy original classes to inherit ChatGPT's dark/light mode styles
+button.className = originalItem.className + ' aichat-folder-menu-item';
+button.setAttribute('role', 'menuitem');
+button.style.cursor = 'pointer';
+button.innerHTML = `
+<div class="flex min-w-0 items-center gap-1.5">
+<div class="relative flex items-center justify-center [opacity:var(--menu-item-icon-opacity,1)] icon">${ICONS.GPT_MENU_ADD_FOLDER}</div>
+<span>Add to Folder</span>
+</div>
+<span style="font-size: 10px; opacity: 0.5;">▶</span>
+`;
+// Inject before the "Delete" item if possible, which is usually last
+menuContainer.appendChild(button);
+button.addEventListener('mouseenter', async () => {
+button.setAttribute('data-state', 'open');
+this.clearCloseTimer();
+const rect = button.getBoundingClientRect();
+const folders = await FolderManager.getFolders();
+this.showLevelMenu(rect.right + 2, rect.top, folders);
+});
+button.addEventListener('mouseleave', () => {
+button.removeAttribute('data-state');
+this.startCloseTimer();
+});
+}
+getChatInfo() {
+if (this.currentTargetChat) {
+return {
+id: this.currentTargetChat.id,
+title: this.currentTargetChat.title,
+url: this.resolveChatUrl(this.currentTargetChat.id)
+};
+}
+// ChatGPT encodes conversation ID in the URL: /c/uuid
+const pathParts = window.location.pathname.split('/');
+const chatId = pathParts[pathParts.length - 1];
+// ChatGPT's sidebar active item title
+const activeChatEl = document.querySelector('#history a[data-active] div.truncate span');
+const titleText = activeChatEl?.textContent || document.title;
+return {
+id: chatId || Date.now().toString(),
+title: titleText.trim(),
+url: window.location.href
+};
+}
+/**
+* Resolves raw identifier strings back into functional navigation paths.
+* USING RELATIVE PATHS: This is crucial for history.pushState to avoid cross-origin reload blocks.
+*/
+resolveChatUrl(chatId: string): string {
+return `https://chatgpt.com/c/${chatId}`;
+}
+/**
+* Smooth navigation for ChatGPT SPA
+*/
+async smoothNavigate(chatId: string, fallbackUrl: string): Promise<void> {
+const targetUrl = this.resolveChatUrl(chatId);
+// 1. Attempt to find the native chat link in the left sidebar and trigger a click directly
+// This is the safest way to let the SPA's internal router handle the transition.
+const nativeLink = document.querySelector(`a[href*="/c/${chatId}"]`) as HTMLAnchorElement | null;
+if (nativeLink) {
+nativeLink.click();
+return;
+}
+// 2. Fallback: Use the History API for SPA routing navigation.
+window.history.pushState({}, '', targetUrl);
+// Dispatch a popstate event to notify the frontend framework (Next.js) that the route has changed.
+window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+}
+}
+  </file>
+  <file path="src\adapters\ClaudeAdapter.ts">
+/**
+* @file ClaudeAdapter.ts
+* @description Implementation for Anthropic Claude with native menu injection and SPA smooth navigation.
+*/
+import { LeftSidebarAdapter } from './LeftSidebar';
+import { FolderManager } from '../models/FolderManager';
+import { ICONS } from '../ui/icons';
+export class ClaudeAdapter extends LeftSidebarAdapter {
+platformId = 'Claude';
+// Selector for Claude's action menu container (adjust selector based on actual DOM inspection)
+itemSelector = '[role="menu"] div:first-child';
+constructor() {
+super();
+this.initClickListener();
+}
+initClickListener(): void {
+document.body.addEventListener('click', (e) => {
+const target = e.target as HTMLElement;
+// get chat info
+const historyContainer = target.closest('ul.flex.flex-col');	// chat container
+if (historyContainer) {
+// Search upwards to find the menu item / container, then locate the associated chat link containing /c/
+const chatRow = target.closest('li');
+const linkEl = chatRow?.querySelector('a[href*="/chat/"]') as HTMLAnchorElement;
+if (linkEl) {
+const href = linkEl.getAttribute('href') || '';
+const pathParts = href.split('/');
+const chatId = pathParts[pathParts.length - 1];
+const title = this.getCleanTitle(linkEl);
+if (chatId) {
+this.currentTargetChat = { id: chatId, title };
+}
+}
+} else if (!target.closest('.aichat-cascade-menu, .aichat-folder-menu-item')) {
+// Clear cache ONLY IF the click is outside the sidebar history, custom menu, AND native menu
+this.currentTargetChat = null;
+}
+// Defer execution slightly to allow ChatGPT to render the context menu DOM into the document
+setTimeout(() => {
+this.createMenuItem();
+}, 0);
+}, true); // Use capture phase to ensure the ID is grabbed before the menu opens
+}
+/**
+* Extracts the first valid text content inside the element.
+*/
+private getCleanTitle(linkEl: HTMLElement): string {
+// Prefer targeting the main title container (works for most AI sidebars)
+const innerSpan = linkEl.querySelector('span.block.truncate');
+if (innerSpan && innerSpan.textContent) {
+return innerSpan.textContent.trim();
+}
+// Fallback strategy
+return linkEl.textContent?.trim() || document.title;
+}
+private createMenuItem(): void {
+const menuContainer = document.querySelector(this.itemSelector);
+if (!menuContainer || menuContainer.querySelector('.aichat-folder-menu-item')) return;
+const button = document.createElement('div');
+button.className = 'aichat-folder-menu-item cds-reset flex w-full items-center gap-xs compact:px-2 comfortable:px-2.5 py-[calc((var(--cds-h-control)-var(--cds-leading-body))/2)] rounded text-body select-none outline-none data-[disabled]:opacity-50 data-[disabled]:pointer-events-none text-primary data-[highlighted]:bg-fill-ghost-hover justify-between data-[popup-open]:bg-fill-ghost-hover';
+button.setAttribute('role', 'menuitem');
+button.innerHTML = `
+<span class="flex size-icon shrink-0 items-center justify-center">${ICONS.GPT_MENU_ADD_FOLDER}</span>
+<span class="min-w-0 flex-1 truncate">Add to Folder</span>
+<span class="-mr-1 shrink-0 text-muted">▶</span>
+`;
+menuContainer.appendChild(button);
+button.addEventListener('mouseenter', async () => {
+button.setAttribute('data-highlighted', '');
+this.clearCloseTimer();
+const rect = button.getBoundingClientRect();
+const folders = await FolderManager.getFolders();
+this.showLevelMenu(rect.right + 2, rect.top, folders);
+});
+button.addEventListener('mouseleave', () => {
+button.removeAttribute('data-highlighted');
+this.startCloseTimer()
+});
+}
+/**
+* Extracts chat telemetry metadata from the active Claude session.
+*/
+getChatInfo(): { id: string; title: string; url: string } {
+if (this.currentTargetChat) {
+return {
+id: this.currentTargetChat.id,
+title: this.currentTargetChat.title,
+url: this.resolveChatUrl(this.currentTargetChat.id)
+};
+}
+// Claude typically encodes conversation IDs in the URL: /chat/[uuid]
+const pathParts = window.location.pathname.split('/');
+const chatId = pathParts[pathParts.indexOf('chat') + 1] || pathParts[pathParts.length - 1] || '';
+const titleText = document.title;
+return {
+id: chatId || Date.now().toString(),
+title: titleText.trim(),
+url: window.location.href
+};
+}
+/**
+* Resolves raw chat identifiers into complete Claude navigable URLs.
+*/
+resolveChatUrl(chatId: string): string {
+return `https://claude.ai/chat/${chatId}`;
+}
+/**
+* Smooth navigation for Claude SPA.
+*/
+async smoothNavigate(chatId: string, fallbackUrl: string): Promise<void> {
+const targetUrl = this.resolveChatUrl(chatId);
+// 1. Attempt to find the native chat link in the sidebar and trigger a click directly
+const nativeLink = document.querySelector(`a[href*="/chat/${chatId}"]`) as HTMLAnchorElement | null;
+if (nativeLink) {
+nativeLink.click();
+return;
+}
+// 2. Fallback to History API for SPA routing navigation if the element isn't in the DOM
+window.history.pushState({}, '', targetUrl);
+window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+}
+}
+  </file>
+  <file path="src\adapters\DeepSeekAdapter.ts">
+/**
+* @file DeepSeekAdapter.ts
+* @description Implementation for DeepSeek with native menu injection and SPA smooth navigation.
+*/
+import { LeftSidebarAdapter } from './LeftSidebar';
+import { FolderManager } from '../models/FolderManager';
+import { ICONS } from '../ui/icons';
+export class DeepSeekAdapter extends LeftSidebarAdapter {
+platformId = 'DeepSeek';
+// Selector for DeepSeek's chat list container or action dropdown menu
+// Note: Update this selector based on DeepSeek's actual DOM structure for chat actions/menus
+itemSelector = '.ds-floating-position-wrapper .ds-dropdown-menu';
+constructor() {
+super();
+this.initClickListener();
+}
+initClickListener(): void {
+document.body.addEventListener('click', (e) => {
+const target = e.target as HTMLElement;
+// get chat info
+const historyContainer = target.closest('div.ds-scroll-area.ds-scroll-area--show-on-focus-within');	// chat container
+if (historyContainer) {
+// Search upwards to find the menu item / container, then locate the associated chat link containing /c/
+const chatRow = target;
+const linkEl = chatRow?.closest('a[href*="/a/chat/s/"]') as HTMLAnchorElement;
+if (linkEl) {
+const href = linkEl.getAttribute('href') || '';
+const pathParts = href.split('/');
+const chatId = pathParts[pathParts.length - 1];
+const title = linkEl.textContent?.trim() || document.title;
+if (chatId) {
+this.currentTargetChat = { id: chatId, title };
+}
+}
+} else if (!target.closest('.aichat-cascade-menu, .aichat-folder-menu-item')) {
+// Clear cache ONLY IF the click is outside the sidebar history, custom menu, AND native menu
+this.currentTargetChat = null;
+}
+// Defer execution slightly to allow ChatGPT to render the context menu DOM into the document
+setTimeout(() => {
+this.createMenuItem();
+}, 50);
+}, true); // Use capture phase to ensure the ID is grabbed before the menu opens
+}
+private createMenuItem(): void {
+const menuContainer = document.querySelector(this.itemSelector);
+if (!menuContainer || menuContainer.querySelector('.aichat-folder-menu-item')) return;
+const button = document.createElement('div');
+button.className = 'aichat-folder-menu-item ds-dropdown-menu-option ds-dropdown-menu-option--none';
+button.setAttribute('role', 'menu');
+// button.style.cssText = 'cursor: pointer; display: flex; align-items: center; padding: 8px 12px;';
+button.innerHTML = `
+<div class="ds-dropdown-menu-option__icon">${ICONS.GPT_MENU_ADD_FOLDER}</div>
+<div class="ds-dropdown-menu-option__label">Add to Folder</div>
+<span style="font-size: 10px; opacity: 0.5; margin-left: 4px;">▶</span>
+`;
+menuContainer.appendChild(button);
+button.addEventListener('mouseenter', async () => {
+this.clearCloseTimer();
+const rect = button.getBoundingClientRect();
+const folders = await FolderManager.getFolders();
+this.showLevelMenu(rect.right + 2, rect.top, folders);
+});
+button.addEventListener('mouseleave', () => this.startCloseTimer());
+}
+/**
+* Extracts chat telemetry metadata from the active DeepSeek session.
+*/
+getChatInfo(): { id: string; title: string; url: string } {
+if (this.currentTargetChat) {
+return {
+id: this.currentTargetChat.id,
+title: this.currentTargetChat.title,
+url: this.resolveChatUrl(this.currentTargetChat.id)
+};
+}
+// DeepSeek typically uses a unique chat ID path segment (e.g., /chat/[id] or similar)
+const pathParts = window.location.pathname.split('/');
+const chatId = pathParts[pathParts.length - 1] || '';
+const titleText = document.title;
+return {
+id: chatId || Date.now().toString(),
+title: titleText.trim(),
+url: window.location.href
+};
+}
+/**
+* Resolves raw chat identifiers into complete DeepSeek navigable URLs.
+*/
+resolveChatUrl(chatId: string): string {
+return `https://chat.deepseek.com/a/chat/s/${chatId}`;
+}
+/**
+* Smooth navigation for DeepSeek SPA.
+*/
+async smoothNavigate(chatId: string, fallbackUrl: string): Promise<void> {
+const targetUrl = this.resolveChatUrl(chatId);
+// 1. Attempt to find the native chat link in the sidebar and trigger a click directly
+const nativeLink = document.querySelector(`a[href*="/chat/${chatId}"]`) as HTMLAnchorElement | null;
+if (nativeLink) {
+nativeLink.click();
+return;
+}
+// 2. Fallback to History API for SPA routing navigation if the element isn't in the DOM
+window.history.pushState({}, '', targetUrl);
+window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+}
+}
+  </file>
+  <file path="src\adapters\GeminiAdapter.ts">
+/**
+* @file GeminiAdapter.ts
+* @description Implementation for Google Gemini with native menu injection.
+*/
+import { LeftSidebarAdapter } from './LeftSidebar';
+import { FolderManager } from '../models/FolderManager';
+export class GeminiAdapter extends LeftSidebarAdapter {
+platformId = 'Gemini';
+// Gemini's menu content container selector
+itemSelector = 'div.mat-mdc-menu-content';
+constructor() {
+super();
+this.initClickListener();
+}
+initClickListener(): void {
+document.body.addEventListener('click', (e) => {
+const target = e.target as HTMLElement;
+// get chat info
+const historyContainer = target.closest('#sidenav-section-content-chats');	// chat container
+if (historyContainer) {
+// Search upwards to find the menu item / container, then locate the associated chat link containing /c/
+const chatRow = target.closest('gem-nav-list-item');
+const linkEl = chatRow?.querySelector('a[href*="/app/"]') as HTMLAnchorElement;
+if (linkEl) {
+const href = linkEl.getAttribute('href') || '';
+const pathParts = href.split('/');
+const chatId = pathParts[pathParts.length - 1];
+const title = linkEl.textContent?.trim() || document.title;
+if (chatId) {
+this.currentTargetChat = { id: chatId, title };
+}
+}
+} else if (!target.closest('.aichat-cascade-menu, .aichat-folder-menu-item')) {
+// Clear cache ONLY IF the click is outside the sidebar history, custom menu, AND native menu
+this.currentTargetChat = null;
+}
+// Defer execution slightly to allow ChatGPT to render the context menu DOM into the document
+setTimeout(() => {
+this.createMenuItem();
+}, 50);
+}, true); // Use capture phase to ensure the ID is grabbed before the menu opens
+}
+private createMenuItem(): void {
+const menuContainer = document.querySelector(this.itemSelector);
+if (!menuContainer || menuContainer.querySelector('.aichat-folder-menu-item')) return;
+const button = document.createElement('button');
+button.className = 'mat-mdc-menu-item mat-focus-indicator aichat-folder-menu-item';
+button.innerHTML = `
+<mat-icon class="mat-icon google-symbols">folder_open</mat-icon>
+<span class="mat-mdc-menu-item-text" style="flex:1">Add to Folder</span>
+<span style="font-size: 10px; opacity: 0.5;">▶</span>
+`;
+menuContainer.appendChild(button);
+button.addEventListener('mouseenter', async () => {
+this.clearCloseTimer();
+const rect = button.getBoundingClientRect();
+const folders = await FolderManager.getFolders();
+this.showLevelMenu(rect.right + 2, rect.top, folders);
+});
+button.addEventListener('mouseleave', () => this.startCloseTimer());
+}
+getChatInfo() {
+if (this.currentTargetChat) {
+return {
+id: this.currentTargetChat.id,
+title: this.currentTargetChat.title,
+url: this.resolveChatUrl(this.currentTargetChat.id)
+};
+}
+// 💡 Locate the anchor element using your precise discovered selectors
+const activeLinkEl = document.querySelector('gem-nav-list-item.always-show-hovered-trailing-content');
+const anchorEl = activeLinkEl?.querySelector('a');
+const chatId = anchorEl?.getAttribute('href')?.split('/').pop() ||
+window.location.pathname.split('/').pop() || '';
+const title = activeLinkEl?.querySelector('.title-text')?.textContent?.trim() ||
+document.title;
+return { id: chatId, title: title, url: window.location.href };
+}
+/**
+* Resolves raw identifier strings back into functional navigation paths.
+*/
+resolveChatUrl(chatId: string): string {
+return `https://gemini.google.com/app/${chatId}`;
+}
+/**
+* Smooth navigation for Gemini SPA
+*/
+async smoothNavigate(chatId: string, fallbackUrl: string): Promise<void> {
+const SELECTOR = `div.chat-history a[href*="${chatId}"]`;
+const container = document.querySelector('infinite-scroller');
+const tryClick = (): boolean => {
+const nativeLink = document.querySelector(SELECTOR) as HTMLAnchorElement | null;
+if (nativeLink) {
+nativeLink.click();
+return true;
+}
+return false;
+};
+if (tryClick()) return;
+if (container) {
+for (let i = 0; i < 10; i++) {
+container.scrollTop = container.scrollHeight;
+await new Promise(r => setTimeout(r, 450));
+if (tryClick()) return;
+}
+}
+window.location.href = fallbackUrl;
+}
+}
+  </file>
+  <file path="src\adapters\LeftSidebar.ts">
+/**
+* @file LeftSidebarAdapter.ts
+* @description Base abstract class defining the contract for site-specific AI platform sidebar adaptations.
+* Provides shared capabilities including DOM mutation monitoring and multi-level cascade menu management.
+*/
+/**
+* Abstract adapter that bridges the application core with specific AI platform UIs (e.g., Gemini, ChatGPT).
+* Subclasses must implement site-specific selectors, ingestion hooks, and routing handlers.
+*/
+export abstract class LeftSidebarAdapter {
+abstract platformId: string;	// Unique identifier string for the target AI platform (e.g., 'gemini', 'chatgpt')
+abstract itemSelector: string;	// DOM selector string used to target individual chat list items in the native sidebar
+protected closeTimer: any = null;	// Reference identifier for the delayed menu closure timer mechanism
+/**
+* Shared state to temporarily cache the target chat metadata.
+* Populated by the initClickListener before the native context menu renders.
+* @protected
+*/
+protected currentTargetChat: { id: string; title: string } | null = null;
+/**
+* Initializes global click listeners to capture chat metadata (ID and Title)
+* exactly when the user clicks the native options button.
+* This contract must be implemented by all child adapters.
+* @protected
+*/
+protected abstract initClickListener(): void;
+/**
+* Creates, positions, and manages the operational lifecycle of a multi-level cascading folder menu.
+* @protected
+* @param {number} x - Target horizontal page coordinate for anchor positioning.
+* @param {number} y - Target vertical page coordinate for anchor positioning.
+* @param {any[]} folders - Layer segments of the folder tree structure to render.
+* @param {number} [level=0] - Current absolute depth of the nested cascade layer.
+*/
+protected showLevelMenu(x: number, y: number, folders: any[], level: number = 0): void {
+if (level === 0) this.removeCascadeMenus();
+const pureFolders = (folders || []).filter(f => !f.isChat);
+if (pureFolders.length === 0 && level > 0) return;
+const menu = document.createElement('div');
+menu.className = `aichat-cascade-menu level-${level}`;
+menu.addEventListener('mouseenter', () => this.clearCloseTimer());
+menu.addEventListener('mouseleave', () => this.startCloseTimer());
+pureFolders.forEach(folder => {
+const item = document.createElement('div');
+item.className = 'aichat-cascade-item';
+const hasChildren = folder.children && folder.children.some((c: any) => !c.isChat);
+item.innerHTML = `
+<span>${folder.name}</span>
+${hasChildren ? '<span style="font-size: 10px; margin-left:2px;">▶</span>' : ''}
+`;
+item.addEventListener('click', async (e) => {
+e.stopPropagation();
+const info = this.getChatInfo();
+window.dispatchEvent(new CustomEvent('aichat:save-to-folder', {
+detail: { folderId: folder.id, chatInfo: info }
+}));
+this.removeCascadeMenus();
+document.body.click();
+});
+if (hasChildren) {
+item.addEventListener('mouseenter', () => {
+this.clearCloseTimer();
+const rect = item.getBoundingClientRect();
+// Pass pre-filtered child slices to prevent redundant calculation cycles
+const childFolders = folder.children.filter((c: any) => !c.isChat);
+this.showLevelMenu(rect.right, rect.top, childFolders, level + 1);
+});
+} else {
+item.addEventListener('mouseenter', () => {
+this.clearCloseTimer();
+this.removeSubMenus(level);
+});
+}
+menu.appendChild(item);
+});
+document.body.appendChild(menu);
+// UI Boundary calculation safeguards: Adjust constraints if elements exceed current viewport boundaries
+const menuHeight = menu.offsetHeight;
+const viewportHeight = window.innerHeight;
+const padding = 10;
+let adjustedY = y;
+if (y + menuHeight > viewportHeight - padding) {
+adjustedY = Math.max(padding, viewportHeight - menuHeight - padding);
+}
+// 💡 Also check right boundary (prevent overflow on the right)
+const menuWidth = menu.offsetWidth;
+const viewportWidth = window.innerWidth;
+let adjustedX = x;
+if (x + menuWidth > viewportWidth - padding) {
+adjustedX = Math.max(padding, viewportWidth - menuWidth - padding);
+}
+menu.style.top = `${adjustedY}px`;
+menu.style.left = `${adjustedX}px`;
+}
+/**
+* Starts the delayed grace-period timer before tearing down active popup menu nodes.
+* @protected
+*/
+protected startCloseTimer(): void {
+this.clearCloseTimer();
+this.closeTimer = setTimeout(() => this.removeCascadeMenus(), 300);
+}
+/**
+* Annuls the pending destruction sequence timer to maintain UI menu tree presentation.
+* @protected
+*/
+protected clearCloseTimer(): void {
+if (this.closeTimer) {
+clearTimeout(this.closeTimer);
+this.closeTimer = null;
+}
+}
+/**
+* Purges all custom cascading context menu components from the active global DOM document.
+* @protected
+*/
+protected removeCascadeMenus(): void {
+document.querySelectorAll('.aichat-cascade-menu').forEach(el => el.remove());
+}
+/**
+* Prunes subset nested menu clusters stretching beyond a designated hierarchical matrix tier.
+* @protected
+* @param {number} currentLevel - The absolute index depth threshold boundary.
+*/
+protected removeSubMenus(currentLevel: number): void {
+document.querySelectorAll('.aichat-cascade-menu').forEach(menu => {
+const level = parseInt(menu.className.match(/level-(\d+)/)?.[1] || "0");
+if (level > currentLevel) menu.remove();
+});
+}
+/**
+* Scrapes and extracts structural chat telemetry from a targeted native DOM element.
+* @abstract
+* @returns {{ id: string; title: string; url: string }} Extracted safe metadata representing the active chat.
+*/
+abstract getChatInfo(): { id: string; title: string; url: string };
+/**
+* Compiles a standard raw conversation identifier into a full, navigable platform hyperlink.
+* @abstract
+* @param {string} chatId - The unique native session identifier string.
+* @returns {string} Fully structured routing address URL bound to the target stream.
+*/
+abstract resolveChatUrl(chatId: string): string;
+/**
+* Orchestrates decoupled soft client navigation for Single Page Application (SPA) layout engines.
+* Falls back gracefully to explicit full location reloads if specialized handling isn't provided.
+* @virtual
+* @param {string} chatId - Target transaction thread metadata key.
+* @param {string} fallbackUrl - The complete destination URL structure backup.
+* @returns {Promise<void>}
+*/
+async smoothNavigate(chatId: string, fallbackUrl: string): Promise<void> {
+// Default: full page reload
+window.location.href = fallbackUrl;
+}
+}
+  </file>
+  <file path="src\background.ts">
+
+  </file>
+  <file path="src\content.ts">
+/**
+* @file Entry point for the AIChatFolders application.
+* Handles the application lifecycle, UI mounting, and adapter binding.
+*/
+import type { LeftSidebarAdapter } from './adapters/LeftSidebar';
+import { RightSidebar } from './ui/RightSidebar';
+import { FolderManager } from './models/FolderManager';
+import { GeminiAdapter } from './adapters/GeminiAdapter';
+import { ChatGPTAdapter } from './adapters/ChatGPTAdapter';
+import { DeepSeekAdapter } from './adapters/DeepSeekAdapter';
+import { ClaudeAdapter } from './adapters/ClaudeAdapter';
+/**
+* Core initialization function that assembles the UI and activates the adapter.
+* Runs asynchronously to fetch remote or local folder configurations.
+*/
+async function initializeApp() {
+const adapter = getAdapter();
+if (!adapter) return;
+FolderManager.init(adapter);
+// 1. Initialize UI
+const sidebar = new RightSidebar(adapter);
+// 2. Load and render data
+const folders = await FolderManager.getFolders();
+sidebar.render(folders);
+console.log('AIChatFolders: App initialized.');
+}
+/**
+* Detects the current host environment and returns the matching AI platform adapter.
+* @returns {LeftSidebarAdapter | null} The matching adapter instance, or null if unsupported.
+*/
+function getAdapter(): LeftSidebarAdapter | null {
+const host = window.location.hostname;
+if (host.includes('gemini.google.com')) {
+return new GeminiAdapter();
+} else if (host.includes('chatgpt.com') || host.includes('chat.openai.com')) {
+return new ChatGPTAdapter();
+} else if (host.includes('chat.deepseek.com')) {
+return new DeepSeekAdapter();
+} else if (host.includes('claude.ai')) {
+return new ClaudeAdapter();
+}
+return null;
+}
+// Execute the entry function
+initializeApp().catch(err => {
+console.error('AIChatFolders initialization failed:', err);
+});
+  </file>
+  <file path="src\models\Folder.ts">
+/**
+* @file Folder.ts
+* @description Type definitions and interfaces for the AI Chat Folders structure.
+*/
+/**
+* Represents an individual chat session telemetry mapped from the AI platform.
+*/
+export interface ChatItem {
+id: string;
+title: string;
+url: string;
+}
+/**
+* Core interface representing a node within the unified hierarchical tree.
+* A node can functionally act as a container (folder) or a leaf node (chat shortcut).
+*/
+export interface FolderData {
+/** Unique identifier for the folder or chat node */
+id: string;
+/** Display name of the folder or the title of the chat session */
+name: string;
+/** UI state flag indicating whether the folder's view expanded or collapsed */
+isCollapsed?: boolean;
+/** Hex color code or class token for theme custom styling */
+color: string;
+/** ID of the parent container; explicitly `null` for root-level entries */
+parentId: string | null;
+/** Recursive list of subfolders or embedded chat leaves nested under this node */
+children: FolderData[];
+/** Legacy array for flat chat items; prefer pushing nested nodes into 'children' with 'isChat' set to true */
+items: ChatItem[];
+/** Discriminator flag; true if this node is a stylized chat leaf rather than an abstract folder */
+isChat?: boolean;
+}
+  </file>
+  <file path="src\models\FolderManager.ts">
+/**
+* @file FolderManager.ts
+* @description Handles data persistence and tree-structure CRUD operations
+* for folders and chat items using chrome.storage.local.
+*/
+import type { FolderData, ChatItem } from './Folder';
+import { LeftSidebarAdapter } from '../adapters/LeftSidebar';
+const MAX_FOLDER_NAME_LENGTH = 40;
+const MAX_CHAT_NAME_LENGTH = 80;
+/**
+* Manager class responsible for handling storage, retrieval, modification,
+* and advanced structural reordering (drag-and-drop) of the folder tree.
+*/
+export class FolderManager {
+private static STORAGE_KEY_PREFIX = 'ai_chat_folders';
+private static adapter: LeftSidebarAdapter | null = null;
+/**
+* Initializes the FolderManager with the current platform's sidebar adapter.
+* Must be called at the application's entry point before invoking any other method.
+* @param {LeftSidebarAdapter} adapter - The active platform adapter (e.g., Gemini, ChatGPT).
+*/
+static init(adapter: LeftSidebarAdapter): void {
+this.adapter = adapter;
+}
+/**
+* Generates a unique, platform-specific storage key based on the initialized adapter.
+* @private
+* @returns {string} The composite key used for chrome.storage.
+* @throws {Error} If called before the manager is properly initialized.
+*/
+private static getStorageKey(): string {
+if (!this.adapter) {
+throw new Error('FolderManager not initialized. Call FolderManager.init(adapter) first.');
+}
+return `${this.STORAGE_KEY_PREFIX}_${this.adapter.platformId}`;
+}
+/**
+* Retrieves the entire hierarchical folder tree from local storage.
+* @returns {Promise<FolderData[]>} A promise resolving to the array of folders.
+*/
+static async getFolders(): Promise<FolderData[]> {
+const key = this.getStorageKey();
+return new Promise((resolve) => {
+chrome.storage.local.get([key], (result) => {
+resolve((result[key] as FolderData[]) || []);
+});
+});
+}
+/**
+* Persists the entire folder tree structure back to local storage.
+* @param {FolderData[]} folders - The full folder array to save.
+* @returns {Promise<void>} A promise that resolves when the save operation completes.
+*/
+static async saveFolders(folders: FolderData[]): Promise<void> {
+const key = this.getStorageKey();
+return new Promise((resolve, reject) => {
+chrome.storage.local.set({ [key]: folders }, () => {
+if (chrome.runtime.lastError) {
+reject(chrome.runtime.lastError);
+} else {
+resolve();
+}
+});
+});
+}
+/**
+* Creates and inserts a new folder into the tree.
+* @param {string} name - Display name of the folder.
+* @param {string} color - Hex code or style class representing the folder color.
+* @param {string | null} [parentId=null] - ID of the parent folder, or null if it's a root-level folder.
+* @returns {Promise<FolderData[]>} The newly updated folder tree.
+*/
+static async addFolder(name: string, color: string, parentId: string | null = null): Promise<FolderData[]> {
+const allFolders = await this.getFolders();
+const sanitizedName = name.trim().slice(0, MAX_FOLDER_NAME_LENGTH);
+const newFolder: FolderData = {
+id: Date.now().toString(),
+name: sanitizedName,
+color, parentId,
+children: [],
+items: []
+};
+if (!parentId) {
+allFolders.unshift(newFolder);
+} else {
+this.findAndAddChild(allFolders, parentId, newFolder);
+}
+await this.saveFolders(allFolders);
+return allFolders;
+}
+/**
+* Updates the basic profile details of an existing folder.
+* @param {string} id - The unique identifier of the target folder.
+* @param {Object} data - The updated folder metadata.
+* @param {string} data.name - The new name for the folder.
+* @param {string} data.color - The new color for the folder.
+* @returns {Promise<void>}
+*/
+public static async updateFolder(id: string, data: { name: string, color: string }): Promise<void> {
+let folders = await this.getFolders();
+const sanitizedName = data.name.trim().slice(0, MAX_FOLDER_NAME_LENGTH);
+const updateInTree = (list: FolderData[]) => {
+for (const f of list) {
+if (f.id === id) {
+f.name = sanitizedName;
+f.color = data.color;
+return true;
+}
+if (f.children && updateInTree(f.children)) return true;
+}
+return false;
+};
+updateInTree(folders);
+await this.saveFolders(folders);
+}
+/**
+* Deletes a folder node from the tree by its ID.
+* @param {string} id - The ID of the folder to be removed.
+* @returns {Promise<FolderData[]>} The updated folder tree without the deleted folder.
+*/
+static async deleteFolder(id: string): Promise<FolderData[]> {
+const folders = await this.getFolders();
+const removeNode = (list: FolderData[]): FolderData[] => {
+return list
+.filter(f => f.id !== id)
+.map(f => ({
+...f,
+children: removeNode(f.children || [])
+}));
+};
+const updated = removeNode(folders);
+await this.saveFolders(updated);
+return updated;
+}
+/**
+* Performs a highly flexible tree reordering, supporting cross-level node displacement (Drag & Drop).
+* @param {string} draggedId - The ID of the node currently being dragged.
+* @param {string} targetId - The ID of the node where the dragged item is dropped.
+* @param {'before' | 'after' | 'inside'} position - Relative positioning rule for the placement.
+* @returns {Promise<FolderData[]>} The updated folder tree after mutation.
+*/
+static async reorder(
+draggedId: string,
+targetId: string,
+position: 'before' | 'after' | 'inside',
+): Promise<FolderData[]> {
+const folders = await this.getFolders();
+let draggedNode: FolderData | null = null;
+// Detach: Recursive helper to safely splice the moving node from its original location
+const detach = (list: FolderData[]): void => {
+for (let i = 0; i < list.length; i++) {
+const current = list[i];
+if (!current) continue; // TypeScript Type Guard
+if (current.id === draggedId) {
+const removed = list.splice(i, 1);
+if (removed.length > 0) {
+draggedNode = removed[0]!;
+}
+return;
+}
+if (current.children) detach(current.children);
+}
+};
+detach(folders);
+if (!draggedNode) return folders;
+// Local immutable reference to lock TS compiler type inference
+const movingNode = draggedNode;
+// Attach: Recursive helper to insert the detached node into its new target destination
+const attach = (list: FolderData[], parentId: string | null = null): boolean => {
+const idx = list.findIndex(f => f.id === targetId);
+if (idx !== -1) {
+const targetNode = list[idx];
+if (!targetNode) return false; // TS Guard
+const nodeToInsert = movingNode as FolderData;
+if (position === 'inside') {
+targetNode.children = targetNode.children || [];
+nodeToInsert.parentId = targetNode.id;
+targetNode.children.push(movingNode);
+} else {
+nodeToInsert.parentId = parentId;
+const insertAt = position === 'before' ? idx : idx + 1;
+list.splice(insertAt, 0, movingNode);
+}
+return true;
+}
+for (const f of list) {
+if (f.children && attach(f.children, f.id)) return true;
+}
+return false;
+};
+attach(folders, null);
+await this.saveFolders(folders);
+return folders;
+}
+/**
+* Traverses the tree recursively to find the parent folder and append a new child folder.
+* @private
+* @param {FolderData[]} list - Subtree list currently being scanned.
+* @param {string} parentId - Target parent folder identifier.
+* @param {FolderData} newNode - Pre-constructed folder object to be inserted.
+* @returns {boolean} True if insertion succeeded, false otherwise.
+*/
+private static findAndAddChild(list: FolderData[], parentId: string, newNode: FolderData): boolean {
+for (const folder of list) {
+if (folder.id === parentId) {
+folder.children = folder.children || [];
+folder.children.push(newNode);
+return true;
+}
+if (folder.children && this.findAndAddChild(folder.children, parentId, newNode)) return true;
+}
+return false;
+}
+/**
+* Saves a specific chat session metadata as a leaf node inside a designated folder.
+* Seamlessly prevents duplicate identical leaf additions within the same folder boundary.
+* @param {string} parentId - The destination folder ID.
+* @param {Object} chat - Extracted telemetry of the chat session.
+* @param {string} chat.id - Original chat history identifier from the AI engine.
+* @param {string} chat.title - Current localized title of the chat.
+* @returns {Promise<FolderData[]>} The modified tree structure.
+*/
+static async saveChatToFolder(parentId: string, chat: { id: string; title: string }): Promise<FolderData[]> {
+const folders = await this.getFolders();
+const sanitizedTitle = (chat.title || 'Untitled Chat')
+.replace(/\s+/g, ' ')
+.trim()
+.slice(0, MAX_CHAT_NAME_LENGTH);
+const chatNode: FolderData = {
+id: `${chat.id}`,
+name: sanitizedTitle,
+color: '#888888',
+parentId: parentId,
+children: [],
+items: [],
+isChat: true,
+};
+const insertChatNode = (list: FolderData[]): boolean => {
+for (const folder of list) {
+if (folder.id === parentId) {
+folder.children = folder.children || [];
+// Avoid duplicates within the same folder
+const exists = folder.children.some(child => child.id === chatNode.id);
+if (!exists) {
+folder.children.push(chatNode);
+}
+return true;
+}
+if (folder.children && insertChatNode(folder.children)) {
+return true;
+}
+}
+return false;
+};
+insertChatNode(folders);
+await this.saveFolders(folders);
+return folders;
+}
+/**
+* Deletes a versatile single node (can be an abstract subfolder or an operational chat leaf) from the tree.
+* @param {string} id - Unique identifier of the node targeted for wipeout.
+* @param {string} [parentId] - If provided, narrows structural search scope down to this explicit parent.
+* Essential for granular item deletion without accidentally pruning matching global items.
+* @returns {Promise<FolderData[]>} A complete refreshed folder representation.
+*/
+static async deleteNode(id: string, parentId?: string): Promise<FolderData[]> {
+const folders = await this.getFolders();
+// Functional recursive mapper to reconstruct clean subtrees while wiping matching references
+const removeNode = (list: FolderData[]): FolderData[] => {
+return list
+.filter(f => {
+// Strict compound checking for chat leaves linked to a specific folder
+if (f.isChat && parentId) {
+return !(f.id === id && f.parentId === parentId);
+}
+// Global sweep fallback for folder clusters or generic matches
+return f.id !== id;
+})
+.map(f => ({
+...f,
+children: removeNode(f.children || [])
+}));
+};
+const updated = removeNode(folders);
+await this.saveFolders(updated);
+return updated;
+}
+}
+  </file>
+  <file path="src\sidebar.ts">
+
+  </file>
+  <file path="src\types.ts">
+// Interface defining chat history information
+interface ChatItem {
+id: string;      // Unique ID obtained from URL, etc.
+title: string;   // Chat title
+}
+// Interface defining folder information
+interface Folder {
+id: string;
+name: string;
+chats: ChatItem[]; // Array of ChatItem
+}
+  </file>
+  <file path="src\ui\FolderEditor.ts">
+/**
+* src/ui/FolderEditor.ts
+*/
+import { FolderManager } from '../models/FolderManager';
+import type { FolderData, ChatItem } from '../models/Folder';
+export class FolderEditor {
+static render(
+onSave: () => void,
+onCancel: () => void,
+parentId: string | null = null,
+existingData?: FolderData): HTMLElement {
+const PRESET_COLORS = ['#3498db', '#2ecc71', '#f1c40f', '#e74c3c', '#9b59b6', '#f39c12', '#8e44ad', '#fd79a8'];
+let selectedColor: string = PRESET_COLORS[0] as string;
+const initialName = existingData ? existingData.name : '';
+const saveBtnText = existingData ? 'Update' : 'Create';
+const form = document.createElement('div');
+form.className = 'aichat-edit-card';
+form.innerHTML = `
+<input type="text" class="aichat-input" id="new-folder-name" autocomplete="off"
+placeholder="Folder Name..." value="${initialName}" maxlength="40" autofocus>
+<div class="aichat-color-picker">
+${PRESET_COLORS.map((c) => {
+const isActive = c === selectedColor ? 'active' : '';
+return `<div class="aichat-color-option ${isActive}" style="background: ${c}" data-color="${c}"></div>`;
+}).join('')}
+</div>
+<div class="aichat-btn-group">
+<button class="aichat-btn btn-cancel">Cancel</button>
+<button class="aichat-btn btn-save">${saveBtnText}</button>
+</div>
+`;
+form.querySelectorAll('.aichat-color-option').forEach(dot => {
+dot.addEventListener('click', () => {
+form.querySelectorAll('.aichat-color-option').forEach(d => d.classList.remove('active'));
+dot.classList.add('active');
+selectedColor = (dot as HTMLElement).dataset.color!;
+});
+});
+form.querySelector('.btn-save')?.addEventListener('click', async () => {
+const name = (form.querySelector('#new-folder-name') as HTMLInputElement).value.trim();
+if (name) {
+if (existingData) {
+await FolderManager.updateFolder(existingData.id, { name, color: selectedColor });
+} else {
+await FolderManager.addFolder(name, selectedColor, parentId);
+}
+onSave();
+form.remove();
+}
+});
+form.querySelector('.btn-cancel')?.addEventListener('click', onCancel);
+return form;
+}
+}
+  </file>
+  <file path="src\ui\RightSidebar.ts">
+/**
+* @file RightSidebar.ts
+* @description Orchestrates the folder tree UI panel, persistent user interaction state,
+* modal anchoring for editing forms, and event delegation for advanced drag-and-drop tree reordering.
+*/
+import { FolderManager } from '../models/FolderManager';
+import { FolderEditor } from './FolderEditor';
+import { ICONS } from './icons';
+import { GlobalStyles } from '../ui/styles/index';
+import type { FolderData } from '../models/Folder';
+import { LeftSidebarAdapter } from '../adapters/LeftSidebar';
+/**
+* Main presentation component responsible for rendering and handling interactions
+* on the right slide-out drawer panel inside the targeted AI platform interface.
+*/
+export class RightSidebar {
+private panel: HTMLElement | null = null;	// The root DOM reference containing the rendered folder framework drawer
+private dock: HTMLElement | null = null;	// The floating trigger handle injected globally into the document viewport edge
+private adapter: LeftSidebarAdapter | null; // Reference to the active site-specific adapter layer
+/**
+* Constructs the RightSidebar interface component.
+* @param {LeftSidebarAdapter | null} adapter - Platform operational binder link.
+*/
+constructor(adapter: LeftSidebarAdapter | null) {
+this.adapter = adapter;
+this.init();
+}
+/**
+* Triggers sequential asynchronous boot sequences for core UI attachment routines.
+* @private
+* @returns {Promise<void>}
+*/
+private async init(): Promise<void> {
+this.injectStyles();
+this.createDockTrigger();
+this.createPanel();
+this.bindDragEvents();
+await this.refresh();
+}
+/**
+* Injects custom standalone utility styling rules into the current runtime document environment head.
+* @private
+*/
+private injectStyles(): void {
+if (document.getElementById('aichat-styles')) return;
+const style = document.createElement('style');
+style.id = 'aichat-styles';
+style.textContent = GlobalStyles;
+document.head.appendChild(style);
+}
+/**
+* Instantiates and mounts the viewport edge trigger toggle latch to the root document body.
+* @private
+*/
+private createDockTrigger(): void {
+this.dock = document.createElement('div');
+this.dock.className = 'aichat-dock-trigger';
+this.dock.onclick = () => this.toggle(true);
+document.body.appendChild(this.dock);
+}
+/**
+* Assembles core structural markup skeletons representing the persistent management node tray.
+* @private
+*/
+private createPanel(): void {
+this.panel = document.createElement('div');
+this.panel.className = 'aichat-panel';
+this.panel.innerHTML = `
+<div class="aichat-header">
+<h2 style="color:white; margin:0; font-size:18px;">Chat Folder</h2>
+<div style="display: flex; gap: 12px; align-items: center;">
+<div id="add-folder-root" class="aichat-header-btn" title="Add New Top-level Folder">
+${ICONS.ADD_FOLDER_HEADER}
+</div>
+<div id="aichat-close-btn" class="aichat-header-btn" title="Close">
+${ICONS.CLOSE}
+</div>
+</div>
+</div>
+<div id="aichat-folder-list"></div>
+`;
+document.body.appendChild(this.panel);
+this.bindGlobalEvents();
+}
+/*
+* Controls the layout presence configuration parameters of both the drawer canvas and the toggle anchor.
+* @param {boolean} open - Target state flag indicating true for presenting the pane layout.
+*/
+public toggle(open: boolean): void {
+if (!this.panel || !this.dock) return;
+this.panel.classList.toggle('is-open', open);
+this.dock.classList.toggle('is-hidden', open);
+}
+/**
+* Sets up event delegation traps on the root panel node structure to streamline operational interactivity.
+* Handles routing shortcuts, item collapsing persistence, form dispatchers, and record purging hooks.
+* @private
+*/
+private bindGlobalEvents(): void {
+this.panel?.addEventListener('click', async (e) => {
+const target = e.target as HTMLElement;
+// Intercept chat link anchor navigation targets to handle SPA smooth client transitions safely
+const chatLink = target.closest('.aichat-chat-anchor') as HTMLAnchorElement | null;
+if (chatLink) {
+const chatId = chatLink.dataset.chatId;
+if (chatId) {
+e.preventDefault();
+const url = this.adapter?.resolveChatUrl(chatId);
+await this.adapter?.smoothNavigate(chatId, url ?? chatLink.href);
+}
+return;
+}
+// Parse toggle actions responsible for manipulating local folder visual expansions
+const folderIcon = target.closest('.toggle-folder') as HTMLElement;
+if (folderIcon) {
+const node = folderIcon.closest('.aichat-folder-node') as HTMLElement;
+if (node) {
+const subContainer = node.querySelector('.aichat-sub-container');
+if (!subContainer || subContainer.children.length === 0) return;
+const isCollapsed = node.classList.toggle('is-collapsed');
+const id = folderIcon.dataset.id;
+if (id) {
+const folders = await FolderManager.getFolders();
+const updateStatus = (list: FolderData[]): boolean => {
+for (const f of list) {
+if (f.id === id) {
+f.isCollapsed = isCollapsed;
+return true;
+}
+if (f.children && updateStatus(f.children)) return true;
+}
+return false;
+};
+updateStatus(folders);
+await FolderManager.saveFolders(folders);
+this.refresh(); // Refresh to update icon
+}
+}
+return;
+}
+// ✅ Click on folder card (but not on action buttons) to toggle expand/collapse
+const card = target.closest('.aichat-folder-card') as HTMLElement;
+if (card && !target.closest('.aichat-actions')) {
+const node = card.closest('.aichat-folder-node') as HTMLElement;
+if (node) {
+const subContainer = node.querySelector('.aichat-sub-container');
+if (subContainer && subContainer.children.length > 0) {
+// Toggle collapse state
+const isCollapsed = node.classList.toggle('is-collapsed');
+const id = card.dataset.id;
+if (id) {
+const folders = await FolderManager.getFolders();
+const updateStatus = (list: FolderData[]): boolean => {
+for (const f of list) {
+if (f.id === id) {
+f.isCollapsed = isCollapsed;
+return true;
+}
+if (f.children && updateStatus(f.children)) return true;
+}
+return false;
+};
+updateStatus(folders);
+await FolderManager.saveFolders(folders);
+this.refresh();
+}
+}
+return;
+}
+}
+if (target.closest('#aichat-close-btn')) {
+this.toggle(false);
+return;
+}
+if (target.closest('#add-folder-root')) {
+this.showEditor(null);
+}
+const editBtn = target.closest('.edit-btn') as HTMLElement;
+if (editBtn) {
+const id = editBtn.dataset.id!;
+const folders = await FolderManager.getFolders();
+const folderToEdit = this.findFolderById(folders, id);
+if (folderToEdit) {
+this.showEditor(folderToEdit.parentId || null, folderToEdit);
+}
+}
+const addSub = target.closest('.add-sub-btn') as HTMLElement;
+if (addSub) {
+this.showEditor(addSub.dataset.id!);
+}
+const delBtn = target.closest('.delete-btn') as HTMLElement;
+if (delBtn) {
+const id = delBtn.dataset.id!;
+const node = delBtn.closest('.aichat-folder-node') as HTMLElement;
+const isChatLeaf = node?.classList.contains('aichat-chat-leaf');
+if (isChatLeaf) {
+// Extract safe tracking contexts linked to chat records stored inside subfolders
+const parentNode = node.parentElement?.closest('.aichat-folder-node');
+const cardEl = parentNode?.querySelector('.aichat-folder-card');
+const parentId = cardEl instanceof HTMLElement ? cardEl.dataset.id : undefined;
+if (parentId && confirm('Remove this chat from the folder?')) {
+const updated = await FolderManager.deleteNode(id, parentId);
+this.render(updated);
+}
+} else {
+// Delete an entire structured folder subsystem branch recursively
+if (confirm('Delete this folder and all sub-folders?')) {
+const updated = await FolderManager.deleteNode(id);
+this.render(updated);
+}
+}
+}
+});
+// Add a safeguard to prevent duplicate event listener registration
+// in case the content script is re-injected by the browser.
+if (!(window as any).__aichat_listener_attached) {
+window.addEventListener('aichat:save-to-folder', async (e: Event) => {
+const customEvent = e as CustomEvent<{ folderId: string; chatInfo: { id: string; title: string } }>;
+const { folderId, chatInfo } = customEvent.detail;
+if (!folderId || !chatInfo) return;
+// Save directly under current single platform logic
+await FolderManager.saveChatToFolder(folderId, chatInfo);
+await this.refresh();
+});
+// Mark the listener as attached
+(window as any).__aichat_listener_attached = true;
+}
+}
+/**
+* Recursively traverses the tree schema layers to resolve a folder record matching a target key identifier.
+* @private
+* @param {FolderData[]} folders - Structured data set array containing active operational profiles.
+* @param {string} id - Explicit query lookup code key indicator.
+* @returns {FolderData | null} Resolution representation object pointer, or null if unlocatable.
+*/
+private findFolderById(folders: FolderData[], id: string): FolderData | null {
+for (const folder of folders) {
+if (folder.id === id) return folder;
+if (folder.children && folder.children.length > 0) {
+const found = this.findFolderById(folder.children, id);
+if (found) return found;
+}
+}
+return null;
+}
+/**
+* Clears internal listing markers and triggers comprehensive re-injection sweeps into the structural UI container.
+* @param {FolderData[]} folders - Complete hierarchical folder configuration matrix.
+*/
+public render(folders: FolderData[]): void {
+const list = document.getElementById('aichat-folder-list');
+if (!list) return;
+const rootFolders = folders.filter(f => !f.parentId);
+list.innerHTML = this.renderFolderTree(rootFolders, 0);
+}
+/**
+* Mounts or modifies inline form editor instances under contextual node hierarchies.
+* Supports branching generation creation modes and inline detail corrections.
+* @private
+* @param {string | null} parentId - Tracking context indicator referencing the parent tree depth.
+* @param {FolderData} [existingData] - Pre-existing folder payload entity used to differentiate update actions.
+*/
+private showEditor(parentId: string | null, existingData?: FolderData): void {
+let container: HTMLElement | null;
+let referenceNode: Node | null = null;
+if (existingData) {
+// Edit mode: locate the card reference DOM node block currently targeted for adjustments
+const card = this.panel?.querySelector(`.aichat-folder-card[data-id="${existingData.id}"]`);
+const node = card?.closest('.aichat-folder-node') as HTMLElement;
+container = node?.parentElement as HTMLElement;
+referenceNode = node; // We'll insert at the current node's position
+} else {
+// Creation mode: append template anchors based on explicit target structural containers
+container = parentId
+? document.getElementById(`children-of-${parentId}`)
+: document.getElementById('aichat-folder-list');
+referenceNode = container?.firstChild || null;
+}
+if (!container || container.querySelector('.aichat-edit-card')) return;
+const form = FolderEditor.render(
+() => this.refresh(),
+() => {
+form.remove();
+if (existingData) {
+(referenceNode as HTMLElement).style.display = 'block';
+}
+},
+parentId,
+existingData
+);
+if (existingData && referenceNode) {
+(referenceNode as HTMLElement).style.display = 'none';
+container.insertBefore(form, referenceNode);
+} else {
+container.insertBefore(form, referenceNode);
+}
+const input = form.querySelector('#new-folder-name') as HTMLInputElement | null;
+if (input) {
+// Provide localized grace intervals allowing complete client rendering tasks to resolve focus
+setTimeout(() => {
+input.focus();
+input.select();
+}, 50);
+}
+}
+/**
+* Pulls structural storage parameters from core configurations and pushes updates downstream to view frameworks.
+*/
+public async refresh(): Promise<void> {
+const folders = await FolderManager.getFolders();
+this.render(folders);
+}
+/**
+* Configures extensive persistent Drag-and-Drop lifecycle bindings to oversee tree structure mutations.
+* Employs strict boundary guards preventing inverted tree circular reference faults.
+* @private
+*/
+private bindDragEvents(): void {
+let draggedId: string | null = null;
+let lastPotentialNode: HTMLElement | null = null;
+let currentTargetNode: HTMLElement | null = null;
+let dragEnterTimer: number | null = null;
+// Cleans up all temporary CSS classes used for highlighting drop zones
+const clearStyles = () => {
+this.panel?.querySelectorAll('.has-drop-before').forEach(n =>
+n.classList.remove('has-drop-before'));
+this.panel?.querySelectorAll('.drop-inside').forEach(c =>
+c.classList.remove('drop-inside'));
+this.panel?.querySelectorAll('[data-drop-pos]').forEach(n => {
+delete (n as HTMLElement).dataset.dropPos;
+});
+};
+// Standardizes operational drag parameter attributes on transition end sequences
+const finalizeDrag = () => {
+if (dragEnterTimer) window.clearTimeout(dragEnterTimer);
+clearStyles();
+document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+draggedId = null;
+lastPotentialNode = null;
+currentTargetNode = null;
+};
+// Start dragging the card
+this.panel?.addEventListener('dragstart', (e) => {
+const target = e.target as HTMLElement;
+const card = target.closest('.aichat-folder-card') as HTMLElement;
+if (!card) return;
+draggedId = card.dataset.id || null;
+card.classList.add('dragging');
+if (e.dataTransfer) {
+e.dataTransfer.effectAllowed = 'move';
+e.dataTransfer.setData('text/plain', draggedId || '');
+}
+});
+// Manage placeholder logic when entering a node
+this.panel?.addEventListener('dragenter', (e) => {
+const card = (e.target as HTMLElement).closest('.aichat-folder-card') as HTMLElement;
+if (!card) return;
+const node = card.closest('.aichat-folder-node') as HTMLElement;
+if (!node || node === lastPotentialNode) return;
+if (card.dataset.id === draggedId) return;
+const draggedNode = document.querySelector('.dragging')?.closest('.aichat-folder-node');
+// Defensive Rule: A parent folder structural segment cannot be dropped into itself or its own nested descendants
+if (draggedNode && node && draggedNode.contains(node)) {
+clearStyles();
+return;
+}
+// Optimization bypass: Skip updates if checking adjacent layout segments immediately following
+const draggedElement = document.querySelector('.dragging')?.closest('.aichat-folder-node');
+if (draggedElement && draggedElement.nextElementSibling === node) {
+clearStyles();
+lastPotentialNode = node;
+currentTargetNode = node;
+return;
+}
+lastPotentialNode = node;
+if (dragEnterTimer) window.clearTimeout(dragEnterTimer);
+// Debounce processing tracks to suppress visual layout flickering spikes during transition events
+dragEnterTimer = window.setTimeout(() => {
+if (lastPotentialNode === node) {
+clearStyles();
+node.classList.add('has-drop-before');
+currentTargetNode = node;
+}
+dragEnterTimer = null;
+}, 100);
+});
+this.panel?.addEventListener('dragover', (e) => {
+e.preventDefault();
+if (!currentTargetNode) return;
+// Terminal leaf nodes (chats) cannot act as containers for other folders/chats
+if (currentTargetNode.classList.contains('aichat-chat-leaf')) {
+return;
+}
+const card = currentTargetNode.querySelector('.aichat-folder-card') as HTMLElement;
+const rect = card.getBoundingClientRect();
+// Calculate the Y coordinate of the mouse relative to the card's top edge
+const relY = e.clientY - rect.top;
+const height = rect.height;
+// Determine drop placement based on cursor vertical position:
+// Top 20%    -> BEFORE target
+// Middle 60% -> INSIDE target
+// Bottom 20% -> AFTER target
+const isInside = relY > height * 0.2 && relY < height * 0.8;
+const isAfter = relY >= height * 0.8;
+const isLast = !currentTargetNode.nextElementSibling;
+card.classList.toggle('drop-inside', isInside);
+if (isLast) {
+if (isAfter) {
+currentTargetNode.dataset.dropPos = 'after';
+currentTargetNode.classList.remove('has-drop-before');
+} else if (currentTargetNode.dataset.dropPos === 'after' && relY <= height * 0.2) {
+delete currentTargetNode.dataset.dropPos;
+currentTargetNode.classList.toggle('has-drop-before', relY <= height * 0.2);
+}
+}
+});
+this.panel?.addEventListener('drop', async (e) => {
+e.preventDefault();
+const targetNode = currentTargetNode;
+const movingId = draggedId;
+if (!targetNode || !movingId) {
+finalizeDrag();
+return;
+}
+// Tear down visual UI configurations before launching storage mutation routines
+const card = targetNode.querySelector('.aichat-folder-card') as HTMLElement;
+const targetId = card?.dataset.id;
+const isInside = card?.classList.contains('drop-inside');
+const isAfter = targetNode.dataset.dropPos === 'after';
+const draggedNode = document.querySelector('.dragging')?.closest('.aichat-folder-node');
+const isDraggingChat = draggedNode?.classList.contains('aichat-chat-leaf');
+// ✅ 判断目标节点是否还在 aichat-folder-list 内部（没有被拖出容器）
+const isStillInsideContainer = targetNode.closest('#aichat-folder-list') !== null;
+// Tear down visual UI configurations before launching storage mutation routines
+finalizeDrag();
+if (targetId && movingId !== targetId) {
+let position: 'before' | 'inside' | 'after' = 'before';
+if (isInside) position = 'inside';
+else if (isAfter) position = 'after';
+// ✅ 聊天记录不能被拖到 aichat-folder-list 外部（失去所属文件夹）
+if (isDraggingChat && !isStillInsideContainer) {
+return;
+}
+await FolderManager.reorder(movingId, targetId, position);
+window.requestAnimationFrame(() => {
+this.refresh();
+});
+}
+});
+this.panel?.addEventListener('dragend', () => {
+finalizeDrag();
+});
+}
+/**
+* Recursively parses tree node parameters down into validated HTML templates.
+* Dispatches proper layouts based on node behavior (abstract containers vs chat leaf markers).
+* @private
+* @param {FolderData[]} folders - Active nested segment structure array.
+* @param {number} level - Numeric matrix tracking current parsing recursion depth.
+* @returns {string} Compiled structural string markup template.
+*/
+private renderFolderTree(folders: FolderData[], level: number): string {
+return folders.map(folder => {
+const hasChildren = folder.children && folder.children.length > 0;
+const isActuallyCollapsed = folder.isCollapsed || !hasChildren;
+const collapseClass = isActuallyCollapsed ? 'is-collapsed' : '';
+// Render branch leaf instances representing mapped native chat history items
+if (folder.isChat) {
+const targetChatId = folder.id;
+let dynamicUrl = '#';
+if (this.adapter) {
+dynamicUrl = this.adapter.resolveChatUrl(targetChatId);
+}
+return `
+<div class="aichat-folder-node aichat-chat-leaf" data-id="${folder.id}">
+<div class="aichat-folder-card aichat-chat-card" data-id="${folder.id}" draggable="true">
+<div class="aichat-folder-header">
+<span class="aichat-folder-title">
+<a href="${dynamicUrl}" class="aichat-chat-anchor" title="${folder.name}" target="_blank" data-chat-id="${targetChatId}">
+${folder.name}
+</a>
+</span>
+<div class="aichat-actions">
+<span class="delete-btn" data-id="${folder.id}">${ICONS.TRASH}</span>
+</div>
+</div>
+</div>
+</div>
+`;
+}
+// Inside the folder rendering section
+const iconClass = hasChildren ? 'aichat-folder-icon colored toggle-folder' : 'aichat-folder-icon toggle-folder';
+const glowStyle = hasChildren ? `style="--glow-color: ${folder.color};"` : '';
+const folderIcon = isActuallyCollapsed ? ICONS.FOLDER_CLOSED : ICONS.FOLDER_OPEN;
+return `
+<div class="aichat-folder-node ${collapseClass}" style="--glow-color: ${folder.color};">
+<div class="aichat-folder-card" data-id="${folder.id}" draggable="true"
+style="border-left: 4px solid ${folder.color};">
+<div class="aichat-folder-header">
+<span class="aichat-folder-title">
+<span class="${iconClass}" data-id="${folder.id}" ${glowStyle}>
+${folderIcon}
+</span>
+<span>${folder.name}</span>
+</span>
+<div class="aichat-actions">
+<span class="edit-btn" data-id="${folder.id}">${ICONS.EDIT}</span>
+<span class="add-sub-btn" data-id="${folder.id}">${ICONS.PLUS}</span>
+<span class="delete-btn" data-id="${folder.id}">${ICONS.TRASH}</span>
+</div>
+</div>
+</div>
+<div class="aichat-sub-container" id="children-of-${folder.id}">
+${this.renderFolderTree(folder.children || [], level + 1)}
+</div>
+</div>
+`;
+}).join('');
+}
+}
+  </file>
+  <file path="src\ui\icons.ts">
+/**
+* src/ui/icons.ts
+* Lightweight SVG icon constants (Lucide style)
+*/
+export const ICONS = {
+CLOSE: `<svg>[SVG_ICON_OMITTED]</svg>`,
+FOLDER: `
+<svg>[SVG_ICON_OMITTED]</svg>`,
+FOLDER_OPEN: `
+<svg>[SVG_ICON_OMITTED]</svg>
+`,
+FOLDER_CLOSED: `
+<svg>[SVG_ICON_OMITTED]</svg>
+`,
+EDIT: `<svg>[SVG_ICON_OMITTED]</svg>`,
+TRASH: `
+<svg>[SVG_ICON_OMITTED]</svg>`,
+PLUS: `
+<svg>[SVG_ICON_OMITTED]</svg>`,
+ADD_FOLDER_HEADER: `
+<svg>[SVG_ICON_OMITTED]</svg>`,
+CHEVRON_DOWN: `<svg>[SVG_ICON_OMITTED]</svg>`,
+GPT_MENU_ADD_FOLDER: `<svg>[SVG_ICON_OMITTED]</svg>`
+};
+  </file>
+  <file path="src\ui\styles\components.ts">
+export const ComponentStyles = `
+.aichat-edit-card {
+background: #2a2a2a;
+border-radius: 12px;
+padding: 15px;
+margin-bottom: 15px;
+border: 1px dashed #555;
+}
+.aichat-input {
+width: 100%;
+background: #171717;
+border: 1px solid #444;
+color: #fff;
+padding: 8px;
+border-radius: 6px;
+margin-bottom: 12px;
+outline: none;
+}
+.aichat-input:focus { border-color: #10a37f; }
+.aichat-color-picker {
+display: flex;
+gap: 8px;
+margin-bottom: 15px;
+flex-wrap: wrap;
+}
+.aichat-color-option {
+width: 20px;
+height: 20px;
+border-radius: 50%;
+cursor: pointer;
+border: 2px solid transparent;
+transition: transform 0.2s;
+}
+.aichat-color-option:hover { transform: scale(1.2); }
+.aichat-color-option.active { border-color: #fff; transform: scale(1.2); }
+.aichat-btn-group {
+display: flex;
+justify-content: flex-end;
+gap: 8px;
+}
+.aichat-btn {
+padding: 5px 12px;
+border-radius: 4px;
+cursor: pointer;
+font-size: 12px;
+border: none;
+font-weight: 500;
+}
+.btn-save { background: #10a37f; color: white; }
+.btn-save:hover { background: #1a7f64; }
+.btn-cancel { background: #444; color: #ccc; }
+.btn-cancel:hover { background: #555; }
+`;
+  </file>
+  <file path="src\ui\styles\folder.ts">
+/**
+* Folder
+*/
+export const FolderStyles = `
+/* ------------------------------ */
+/* --- Folder Cards --- */
+/* ------------------------------ */
+.aichat-folder-card {
+background: #212121;
+border-radius: 8px;
+padding: 6px 12px;
+margin-bottom: 0;
+border: 1px solid #333;
+transition: all 0.2s ease;
+cursor: grab;
+position: relative;
+}
+.aichat-folder-card:hover { background: #2a2a2a; }
+.aichat-folder-card:active { cursor: grabbing; }
+.aichat-folder-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+color: #efefef;
+font-size: 14px;
+font-weight: 500;
+}
+.aichat-folder-title {
+display: flex;
+align-items: center;
+gap: 10px; /* Increased gap for better breathing room */
+color: #efefef;
+}
+/* ----------------------------------- */
+/* --- Folder Icon with Color Glow --- */
+/* ----------------------------------- */
+.aichat-folder-icon {
+display: flex;
+align-items: center;
+color: #888;
+transition: all 0.2s ease;
+}
+.aichat-folder-icon.colored {
+filter: drop-shadow(0 0 2px var(--glow-color))
+drop-shadow(0 0 6px var(--glow-color));
+color: #bebebe;
+}
+/* ✅ Open state: remove glow, brighten color */
+.aichat-folder-node:not(.is-collapsed) > .aichat-folder-card .aichat-folder-icon.colored {
+filter: none;
+color: var(--glow-color);
+}
+.aichat-folder-node {
+position: relative;
+padding: 4px 0;
+transition: all 0.2s ease;
+}
+/* Vertical dotted line connecting subfolders for visual guidance */
+.aichat-sub-container {
+border-left: 1px dashed var(--glow-color);
+margin-left: 8px;
+padding-left: 10px;
+}
+/* Folder icon as clickable toggle */
+.aichat-folder-icon.toggle-folder {
+cursor: pointer;
+transition: transform 0.2s ease;
+}
+.aichat-folder-icon.toggle-folder:hover {
+transform: scale(1.1);
+}
+/* ----------------------------------- */
+/* --- Folder Actions (Plus/Trash) --- */
+/* ----------------------------------- */
+.aichat-actions {
+display: flex;
+gap: 8px;
+}
+.aichat-actions span {
+cursor: pointer;
+opacity: 0;
+transition: opacity 0.15s ease;
+display: flex;
+align-items: center;
+}
+.aichat-folder-card:hover .aichat-actions span {
+opacity: 0.5;
+}
+/* Hover effect: Scale up and become fully opaque */
+.aichat-actions span:hover {
+opacity: 1 !important;
+transform: scale(1.1); /* Slightly enlarge for better tactility */
+}
+.aichat-actions .delete-btn { color: #ff4d4f; }
+.aichat-actions .delete-btn:hover {
+filter: brightness(1.2);
+text-shadow: 0 0 8px rgba(255, 77, 79, 0.3);
+}
+.aichat-actions .add-sub-btn { color: #10a37f; }
+.aichat-actions .add-sub-btn:hover {
+filter: brightness(1.2);
+text-shadow: 0 0 8px rgba(16, 163, 127, 0.3);
+}
+.aichat-actions .edit-btn {color: #e9ad08;}
+.aichat-actions .edit-btn:hover {
+filter: brightness(1.2);
+text-shadow: 0 0 8px rgba(233, 173, 8, 0.3);
+}
+/* ---------------------------- */
+/* --- Drag and Drop States --- */
+/* ---------------------------- */
+.aichat-folder-card.dragging {
+opacity: 0.4;
+border: 1px dashed #777;
+}
+.aichat-folder-node.has-drop-before {
+padding-top: 50px; /* Space for the placeholder */
+}
+.aichat-folder-node.has-drop-before::before {
+content: "Insert Above";
+display: flex;
+align-items: center;
+justify-content: center;
+position: absolute;
+top: 0; left: 0; right: 0;
+height: 36px;
+border: 2px dashed #444;
+border-radius: 12px;
+background: rgba(255, 255, 255, 0.02);
+color: #666;
+font-size: 11px;
+pointer-events: none;
+}
+/* Inside State: Added via DragOver */
+.aichat-folder-card.drop-inside {
+background: rgba(16, 163, 127, 0.25) !important;
+outline: 2px solid #10a37f;
+}
+/* 💡 "Placeholder after the last node" */
+.aichat-folder-node[data-drop-pos="after"] {
+position: relative;
+padding-bottom: 50px; /* Spacer height roughly equal to one card */
+}
+.aichat-folder-node[data-drop-pos="after"]::after {
+content: "Drop here to end";
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 36px;
+border: 2px dashed rgba(255, 255, 255, 0.2); /* Dashed border */
+border-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+color: rgba(255, 255, 255, 0.4);
+font-size: 12px;
+pointer-events: none; /* Required to prevent mouse interference */
+margin-top: 8px;
+}
+/* 1. Base button style (in the right action bar) */
+.toggle-btn {
+display: inline-flex;
+cursor: pointer;
+transition: transform 0.3s ease; /* 💡 Rotate animation */
+}
+/* 2. Default expanded state: arrow points down (rotate 0deg) */
+.toggle-btn svg {
+transform: rotate(0deg);
+}
+/* 3. 💡 Collapsed state: rotate arrow 180deg pointing up, indicating "closed" */
+.is-collapsed .toggle-btn svg {
+transform: rotate(180deg);
+}
+/* 4. 💡 Collapsed state: hide the sub-folder container */
+.is-collapsed .aichat-sub-container {
+display: none;
+}
+.aichat-cascade-menu {
+position: fixed; /* Use fixed to completely eliminate parent positioning interference */
+background: #2f2f2f;
+border: 1px solid rgba(255, 255, 255, 0.12);
+border-radius: 8px;
+box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+z-index: 100000; /* Ensure it appears above Gemini/ChatGPT menus */
+padding: 4px 0;
+min-width: 180px;
+}
+/* Individual Item */
+.aichat-cascade-item {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 8px 12px;
+color: #e3e3e3;
+font-size: 14px;
+cursor: pointer;
+transition: background 0.2s;
+position: relative;
+margin-left: -2px;
+}
+.aichat-cascade-item:hover {
+background-color: rgba(255, 255, 255, 0.08);
+}
+/* Sub-menu styling */
+.aichat-sub-menu {
+display: none;
+position: absolute;
+left: 100%; /* Show to the right */
+top: -8px;
+padding: 8px 0;
+}
+.aichat-cascade-item:hover > .aichat-sub-menu {
+display: block;
+}
+/* ------------------------------ */
+/* --- Chat Leaf Nodes (Records) -- */
+/* ------------------------------ */
+/* ── Chat Leaf Nodes (Records) ── */
+/* Chat leaf card: ultra compact, background blends with parent */
+.aichat-chat-leaf .aichat-folder-card {
+background: transparent;
+border-radius: 0;
+padding: 1px 2px;
+min-height: 0;
+border: none;
+// border-left: 2px solid #333;
+margin: 0;
+transition: background 0.1s ease;
+}
+.aichat-chat-leaf .aichat-folder-card:hover {
+background: rgba(255, 255, 255, 0.04);
+}
+/* Chat title: compact, readable */
+.aichat-chat-leaf .aichat-folder-title {
+font-size: 13x;
+font-weight: 400;
+color: #e9e9e9;          /* Brighter for readability */
+gap: 0;
+min-width: 0;
+overflow: hidden;
+}
+/* Chat anchor link: ellipsis with tooltip on hover */
+.aichat-chat-anchor {
+color: #e9e9e9;
+text-decoration: none;
+display: block;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+padding: 2px 0;
+}
+.aichat-chat-anchor:hover {
+color: #ffffff;
+text-decoration: none;
+}
+/* Hide folder icon for chat leaves */
+.aichat-chat-leaf .aichat-folder-icon {
+display: none;
+}
+/* Delete button: hidden by default, visible on row hover */
+.aichat-chat-leaf .delete-btn {
+opacity: 0;
+transition: opacity 0.15s ease;
+}
+.aichat-chat-leaf:hover .delete-btn {
+opacity: 0.3;
+}
+.aichat-chat-leaf .delete-btn:hover {
+opacity: 1;
+}
+/* Remove extra spacing between chat items */
+.aichat-chat-leaf {
+padding: 0;
+margin: 0;
+}
+/* Remove left border for sub-containers inside chat leaves */
+.aichat-chat-leaf .aichat-sub-container {
+border-left: none;
+padding-left: 0;
+}
+`;
+  </file>
+  <file path="src\ui\styles\index.ts">
+import { LayoutStyles } from './layout';
+import { FolderStyles } from './folder';
+import { ComponentStyles } from './components';
+/**
+* Combined Global Styles
+*/
+export const GlobalStyles = `
+${LayoutStyles}
+${FolderStyles}
+${ComponentStyles}
+`;
+  </file>
+  <file path="src\ui\styles\layout.ts">
+/**
+* Main Layout Components
+*/
+export const LayoutStyles = `
+.aichat-panel {
+position: fixed;
+right: -320px;
+top: 0;
+width: 320px;
+height: 100%;
+background-color: #171717;
+z-index: 10001;
+transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+padding: 20px;
+box-sizing: border-box;
+border-left: 1px solid #333;
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.aichat-panel.is-open { right: 0; }
+/* ------------------------------ */
+/* --- Header & Buttons --- */
+/* ------------------------------ */
+.aichat-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+padding-bottom: 10px;
+border-bottom: 1px solid #333;
+}
+.aichat-header-btn {
+cursor: pointer;
+padding: 4px 8px;
+border-radius: 4px;
+transition: background 0.2s;
+font-size: 18px;
+color: #888;
+display: flex;
+align-items: center;
+}
+.aichat-header-btn:hover {
+background: #333;
+color: #fff;
+}
+/* ------------------------------ */
+/* ---        dock        --- */
+/* ------------------------------ */
+.aichat-dock-trigger {
+position: fixed;
+right: 0;
+top: 50%;
+transform: translateY(-50%);
+width: 10px;
+height: 60px;
+background-color: #10a37f;
+cursor: pointer;
+z-index: 10000;
+border-radius: 10px 0 0 10px;
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+}
+.aichat-dock-trigger:hover {
+width: 20px;
+background-color: #1a7f64;
+}
+.aichat-dock-trigger.is-hidden {
+right: -30px;
+opacity: 0;
+pointer-events: none;
+}
+`;
+  </file>
+  <file path="tsconfig.json">
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",
+    "outDir": "./dist",
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "module": "esnext",
+    "target": "esnext",
+	"moduleResolution": "bundler",
+    // For nodejs:
+	"lib": ["DOM", "esnext"],
+	/* For JSON file */
+    "resolveJsonModule": true,
+    "types": ["node", "chrome"],
+    // and npm install -D @types/node
+    // Other Outputs
+    "sourceMap": false,
+    "declaration": false,
+    "declarationMap": false,
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+    // Recommended Options
+    "strict": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+  },
+  "include": ["src/**/*"]
+}
+  </file>
+  <file path="vite.config.ts">
+import { defineConfig } from 'vite';
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+export default defineConfig({
+build: {
+// We use rollupOptions directly for multiple entry points
+rollupOptions: {
+input: {
+content: resolve(__dirname, 'src/content.ts'),
+// background: resolve(__dirname, 'src/background.ts'),
+},
+output: {
+// This ensures each entry becomes a standalone IIFE file
+entryFileNames: '[name].js',
+format: 'iife',
+// This prevents the code splitting error for multiple IIFEs
+inlineDynamicImports: false,
+}
+},
+outDir: 'dist',
+emptyOutDir: false,
+}
+});
+  </file>
+</source_codes>

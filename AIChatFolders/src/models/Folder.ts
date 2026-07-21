@@ -23,8 +23,6 @@ export interface FolderData {
     name: string;
     /** UI state flag indicating whether the folder's view expanded or collapsed */
     isCollapsed?: boolean;
-    /** Emoji identifier or visual icon class representing the node */
-    icon: string;
     /** Hex color code or class token for theme custom styling */
     color: string;
     /** ID of the parent container; explicitly `null` for root-level entries */
@@ -36,6 +34,4 @@ export interface FolderData {
 
     /** Discriminator flag; true if this node is a stylized chat leaf rather than an abstract folder */
     isChat?: boolean;
-    /** The raw native conversation ID used by the target AI platform (Gemini/ChatGPT) */
-    chatId?: string;
 }

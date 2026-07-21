@@ -1,24 +1,64 @@
 /**
- * ChatGPTAdapter.ts
- * Implementation for OpenAI ChatGPT with native menu injection.
+ * @file ChatGPTAdapter.ts
+ * @description Implementation for OpenAI ChatGPT. Handles native menu injection
+ * and custom SPA (Single Page Application) navigation logic.
  */
 import { LeftSidebarAdapter } from './LeftSidebar';
+import { ICONS } from '../ui/icons';
+import { FolderManager } from '../models/FolderManager';
 
 export class ChatGPTAdapter extends LeftSidebarAdapter {
     platformId = 'ChatGPT';
-    // ChatGPT usually uses role="menu" for the popover container
-    itemSelector = '[role="menu"]';
+    // Target selector for ChatGPT's native popover action menu
+    itemSelector = '[role="menu"] > div[role="group"]:last-child';
 
-    injectAddButtons(): void {
-        const menuContainer = document.querySelector(this.itemSelector);
-        
-        // Skip if menu not found or button already exists
-        if (!menuContainer || menuContainer.querySelector('.aichat-folder-menu-item')) return;
-
-        this.createMenuItem(menuContainer as HTMLElement);
+	constructor() {
+        super();
+        this.initClickListener();
     }
 
-    private createMenuItem(menuContainer: HTMLElement): void {
+    initClickListener(): void {
+        document.body.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            
+			// get chat info
+			const historyContainer = target.closest('#history');	// chat container
+            if (historyContainer) {
+				// Traverse up the DOM tree to locate the list item, then find the anchor tag containing the chat ID
+				const chatRow = target.closest('li');
+				const linkEl = chatRow?.querySelector('a[href*="/c/"]') as HTMLAnchorElement;
+				
+				if (linkEl) {
+					const href = linkEl.getAttribute('href') || '';
+					const pathParts = href.split('/');
+					const chatId = pathParts[pathParts.length - 1];
+					const title = linkEl.textContent?.trim() || document.title;
+
+					if (chatId) {
+						this.currentTargetChat = { id: chatId, title };
+					}
+				}
+			} else if (!target.closest('.aichat-cascade-menu, .aichat-folder-menu-item')) {
+
+                // Invalidate the cache if the user clicks completely outside the sidebar or menus
+                this.currentTargetChat = null;
+            }
+
+			// Defers execution slightly to allow the SPA to render the context menu DOM elements.
+            setTimeout(() => {
+                this.createMenuItem();
+            }, 50);
+
+        }, true); // Use capture phase to ensure data is grabbed before React swallows the event
+    }
+
+    private createMenuItem(): void {
+
+		const menuContainer = document.querySelector(this.itemSelector);
+			
+		// Skip if menu not found or button already exists
+		if (!menuContainer || menuContainer.querySelector('.aichat-folder-menu-item')) return;
+
         // Find an existing menu item to clone its classes for consistent styling
         const originalItem = menuContainer.querySelector('[role="menuitem"]');
         if (!originalItem) return;
@@ -28,38 +68,43 @@ export class ChatGPTAdapter extends LeftSidebarAdapter {
         button.className = originalItem.className + ' aichat-folder-menu-item';
         button.setAttribute('role', 'menuitem');
         button.style.cursor = 'pointer';
-
-        // ChatGPT uses Lucide icons (SVG) or similar. We'll use a compatible SVG structure.
         button.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
-                <line x1="12" y1="10" x2="12" y2="16"></line>
-                <line x1="9" y1="13" x2="15" y2="13"></line>
-            </svg>
-            <span>Add to Folder</span>
+			<div class="flex min-w-0 items-center gap-1.5">
+				<div class="relative flex items-center justify-center [opacity:var(--menu-item-icon-opacity,1)] icon">${ICONS.GPT_MENU_ADD_FOLDER}</div>
+            	<span>Add to Folder</span>
+			</div>
+			<span style="font-size: 10px; opacity: 0.5;">▶</span>
         `;
 
         // Inject before the "Delete" item if possible, which is usually last
-        const deleteItem = menuContainer.querySelector('.text-token-text-error');
-        if (deleteItem) {
-            menuContainer.insertBefore(button, deleteItem);
-        } else {
-            menuContainer.appendChild(button);
-        }
+        menuContainer.appendChild(button);
 
-        button.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const info = this.getChatInfo();
-            console.log(info);
+		button.addEventListener('mouseenter', async () => {
 
-            window.dispatchEvent(new CustomEvent('aichat:open-folder-selector', { detail: info }));
-            
-            // Close the menu by clicking away
-            document.body.click();
-        });
+			button.setAttribute('data-state', 'open');
+			
+			this.clearCloseTimer();
+			const rect = button.getBoundingClientRect();
+			const folders = await FolderManager.getFolders();
+			this.showLevelMenu(rect.right + 2, rect.top, folders);
+		});
+
+		button.addEventListener('mouseleave', () => {
+			button.removeAttribute('data-state');
+			this.startCloseTimer();
+		});		
     }
 
     getChatInfo() {
+
+		if (this.currentTargetChat) {
+            return {
+                id: this.currentTargetChat.id,
+                title: this.currentTargetChat.title,
+                url: this.resolveChatUrl(this.currentTargetChat.id)
+            };
+        }
+
         // ChatGPT encodes conversation ID in the URL: /c/uuid
         const pathParts = window.location.pathname.split('/');
         const chatId = pathParts[pathParts.length - 1];
@@ -75,15 +120,32 @@ export class ChatGPTAdapter extends LeftSidebarAdapter {
         };
     }
 
-    observeChanges(): void {
-        const observer = new MutationObserver(() => this.injectAddButtons());
-        observer.observe(document.body, { childList: true, subtree: true });
-    }
-
 	/**
      * Resolves raw identifier strings back into functional navigation paths.
+     * USING RELATIVE PATHS: This is crucial for history.pushState to avoid cross-origin reload blocks.
      */
     resolveChatUrl(chatId: string): string {
         return `https://chatgpt.com/c/${chatId}`;
     }
+
+	/**
+	* Smooth navigation for ChatGPT SPA
+	*/
+	async smoothNavigate(chatId: string, fallbackUrl: string): Promise<void> {
+		const targetUrl = this.resolveChatUrl(chatId);
+		
+		// 1. Attempt to find the native chat link in the left sidebar and trigger a click directly
+        // This is the safest way to let the SPA's internal router handle the transition.
+		const nativeLink = document.querySelector(`a[href*="/c/${chatId}"]`) as HTMLAnchorElement | null;
+		if (nativeLink) {
+			nativeLink.click();
+			return;
+		}
+
+		// 2. Fallback: Use the History API for SPA routing navigation.
+		window.history.pushState({}, '', targetUrl);
+		
+		// Dispatch a popstate event to notify the frontend framework (Next.js) that the route has changed.
+		window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+	}
 }

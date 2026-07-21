@@ -324,4 +324,15 @@ export const FolderStyles = `
 		padding-left: 0;
 	}
 
+	/* ------------------------------ */
+	/* --- Newly Added Highlight   --- */
+	/* ------------------------------ */
+	@keyframes aichat-flash-highlight {
+		0%, 100% { background: transparent; box-shadow: none; }
+		50% { background: rgba(16, 163, 127, 0.35); box-shadow: 0 0 0 1px rgba(16, 163, 127, 0.6); }
+	}
+	.aichat-just-added {
+		animation: aichat-flash-highlight 1.5s ease-in-out 3;
+	}
+
 `;

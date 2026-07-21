@@ -12,13 +12,21 @@ export abstract class LeftSidebarAdapter {
     abstract platformId: string;	// Unique identifier string for the target AI platform (e.g., 'gemini', 'chatgpt')
     abstract itemSelector: string;	// DOM selector string used to target individual chat list items in the native sidebar
     protected closeTimer: any = null;	// Reference identifier for the delayed menu closure timer mechanism
-
-    /**
-     * Injects the custom "Add to Folder" action triggers into the platform's native UI elements.
-     * @abstract
+	/**
+     * Shared state to temporarily cache the target chat metadata.
+     * Populated by the initClickListener before the native context menu renders.
+     * @protected
      */
-    abstract injectAddButtons(): void;
+    protected currentTargetChat: { id: string; title: string } | null = null;
 
+	/**
+     * Initializes global click listeners to capture chat metadata (ID and Title) 
+     * exactly when the user clicks the native options button.
+     * This contract must be implemented by all child adapters.
+     * @protected
+     */
+    protected abstract initClickListener(): void;
+		
 	/**
      * Creates, positions, and manages the operational lifecycle of a multi-level cascading folder menu.
      * @protected
@@ -138,15 +146,6 @@ export abstract class LeftSidebarAdapter {
             const level = parseInt(menu.className.match(/level-(\d+)/)?.[1] || "0");
             if (level > currentLevel) menu.remove();
         });
-    }
-
-	/**
-     * Begins monitoring the platform's DOM tree for dynamic mutations to ensure
-     * custom action elements persist during client-side state transitions.
-     */
-    observeChanges(): void {
-        const observer = new MutationObserver(() => this.injectAddButtons());
-        observer.observe(document.body, { childList: true, subtree: true });
     }
 
     /**

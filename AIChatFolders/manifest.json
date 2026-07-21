@@ -6,7 +6,7 @@
 	"permissions": ["storage"],
 	"content_scripts": [
 	{
-		"matches": ["https://gemini.google.com/*", "https://chatgpt.com/*"],
+		"matches": ["https://gemini.google.com/*", "https://chatgpt.com/*", "https://chat.deepseek.com/*", "https://claude.ai/*"],
 		"js": ["dist/content.js"]
 	}
 	]
